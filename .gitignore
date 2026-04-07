@@ -1,0 +1,12 @@
+# Dependencias
+api/node_modules/
+
+# Entorno compilado
+api/dist/
+
+# Variables de entorno 
+.env
+
+# Logs y SO
+npm-debug.log*
+.DS_Store

@@ -1,0 +1,185 @@
+[
+  {
+    "section": "contexto_negocio",
+    "metadata": {
+      "source": "StreetRaceX",
+      "type": "descripcion_general"
+    },
+    "content": "Street Race X es una plataforma digital inspirada en aplicaciones como Tinder, pero enfocada en carreras callejeras. Permite a pilotos conectarse, retarse y competir en diferentes modalidades. La plataforma organiza la competencia por rangos de habilidad para garantizar equidad. Los usuarios construyen reputación mediante victorias y ascienden en un sistema competitivo."
+  },
+  {
+    "section": "vision_producto",
+    "metadata": {
+      "type": "vision"
+    },
+    "content": "Ser la plataforma de referencia para la comunidad de pilotos de calle, donde la rivalidad sana, el respeto y la emoción de la velocidad convergen en una experiencia digital en tiempo real."
+  },
+  {
+    "section": "propuesta_valor",
+    "metadata": {
+      "type": "features"
+    },
+    "content": "Emparejamiento inteligente por rango y tipo de vehículo. Sistema de retos con múltiples modalidades. Perfil detallado del piloto con estadísticas. Evolución por sistema de rangos. Notificaciones en tiempo real mediante WebSockets."
+  },
+  {
+    "section": "actores_usuario",
+    "metadata": {
+      "type": "actor"
+    },
+    "content": "El usuario o piloto gestiona su perfil, administra vehículos, descubre otros pilotos, envía y recibe retos, registra resultados y escala en el sistema de rangos."
+  },
+  {
+    "section": "actores_admin",
+    "metadata": {
+      "type": "actor"
+    },
+    "content": "El administrador gestiona usuarios, supervisa retos, resuelve disputas, administra categorías y zonas, y accede a métricas del sistema."
+  },
+  {
+    "section": "entidad_usuario",
+    "metadata": {
+      "entity": "User"
+    },
+    "content": "Atributos: id UUID, username único, email único, password_hash, foto_perfil URL, zona_localidad, zona_ciudad, zona_estado, zona_pais, rango (S,A,B,C,D), categoria, victorias, derrotas, retos_consecutivos, estado (activo,inactivo,suspendido), created_at, updated_at."
+  },
+  {
+    "section": "entidad_vehiculo",
+    "metadata": {
+      "entity": "Vehicle"
+    },
+    "content": "Atributos: id UUID, user_id, tipo_vehiculo (auto,moto,monopatin_electrico), marca, modelo, año, color, placa única (nullable para monopatines), foto URL, modificaciones, activo boolean, created_at. Máximo 3 vehículos por usuario."
+  },
+  {
+    "section": "entidad_reto",
+    "metadata": {
+      "entity": "Challenge"
+    },
+    "content": "Atributos: id, retador_id, retado_id, tipo_carrera (cuarto_milla, vueltas, derrape), vehiculo_retador_id, vehiculo_retado_id, estado (pendiente, aceptado, rechazado, en_curso, completado, cancelado), ganador_id, ubicacion, fecha, notas, created_at, updated_at."
+  },
+  {
+    "section": "entidad_categoria",
+    "metadata": {
+      "entity": "CompetitionCategory"
+    },
+    "content": "Atributos: id, nombre, descripcion, activo."
+  },
+  {
+    "section": "entidad_notificacion",
+    "metadata": {
+      "entity": "Notification"
+    },
+    "content": "Atributos: id, user_id, tipo (reto_recibido, reto_aceptado, reto_rechazado, resultado, rango_subido), mensaje, leida, referencia_id, created_at."
+  },
+  {
+    "section": "sistema_rangos",
+    "metadata": {
+      "type": "core_logic"
+    },
+    "content": "Rangos: D (inicio), C, B, A, S (máximo). Para ascender se requieren 2 victorias consecutivas en el rango actual. Una derrota resta 1 punto (mínimo 0). No hay descenso de rango. Al ascender, el contador se reinicia."
+  },
+  {
+    "section": "reglas_registro",
+    "metadata": {
+      "type": "business_rules"
+    },
+    "content": "Email y username únicos. Máximo 3 vehículos. Solo un vehículo activo. Usuario necesita al menos un vehículo para competir. Todos comienzan en rango D."
+  },
+  {
+    "section": "reglas_retos",
+    "metadata": {
+      "type": "business_rules"
+    },
+    "content": "Solo retos entre usuarios del mismo rango y tipo de vehículo. No se permiten retos duplicados activos entre los mismos usuarios. El reto puede ser aceptado o rechazado. Debe completarse o cancelarse. El resultado debe confirmarse por ambas partes o un administrador."
+  },
+  {
+    "section": "reglas_rango",
+    "metadata": {
+      "type": "business_rules"
+    },
+    "content": "Ascenso con 2 victorias consecutivas. Derrota resta 1 punto. Ascenso automático. Sin descenso de rango. Rango S es el máximo."
+  },
+  {
+    "section": "tipos_carrera",
+    "metadata": {
+      "type": "domain"
+    },
+    "content": "Cuarto de milla: carrera en línea recta de 402 metros. Vueltas: circuito con número de vueltas. Derrape: evaluación técnica subjetiva."
+  },
+  {
+    "section": "rf_autenticacion",
+    "metadata": {
+      "type": "functional_requirement"
+    },
+    "content": "Registro con email y contraseña. Login con JWT. Validación de token en rutas protegidas. Roles: piloto y administrador."
+  },
+  {
+    "section": "rf_perfil",
+    "metadata": {
+      "type": "functional_requirement"
+    },
+    "content": "Usuarios pueden ver, actualizar y eliminar su perfil. Ver perfiles públicos con estadísticas y vehículos."
+  },
+  {
+    "section": "rf_vehiculos",
+    "metadata": {
+      "type": "functional_requirement"
+    },
+    "content": "Agregar, editar, eliminar vehículos. Marcar uno como activo. Determina contra quién competir."
+  },
+  {
+    "section": "rf_retos",
+    "metadata": {
+      "type": "functional_requirement"
+    },
+    "content": "Enviar retos, aceptar, rechazar, cancelar. Registrar resultados. Consultar historial."
+  },
+  {
+    "section": "rf_descubrimiento",
+    "metadata": {
+      "type": "functional_requirement"
+    },
+    "content": "Listar pilotos del mismo rango y tipo de vehículo. Filtros por zona y tipo de carrera. Paginación."
+  },
+  {
+    "section": "rf_notificaciones",
+    "metadata": {
+      "type": "functional_requirement"
+    },
+    "content": "Eventos en tiempo real: reto recibido, aceptado, rechazado, completado y ascenso de rango."
+  },
+  {
+    "section": "no_funcionales",
+    "metadata": {
+      "type": "non_functional"
+    },
+    "content": "Seguridad con bcrypt y JWT. Arquitectura clara (MVC, Hexagonal o DDD). API con HTTP correcto. Documentación obligatoria. Base de datos SQL o NoSQL."
+  },
+  {
+    "section": "stack",
+    "metadata": {
+      "type": "tech"
+    },
+    "content": "Node.js, Express, TypeScript, Socket.io, JWT, bcrypt. Base de datos: PostgreSQL, MySQL, MongoDB o Firestore."
+  },
+  {
+    "section": "entrega_1",
+    "metadata": {
+      "type": "delivery"
+    },
+    "content": "Diseño de API: documentación, endpoints, diagrama ER o colecciones, definición de recursos, request y response."
+  },
+  {
+    "section": "entrega_2",
+    "metadata": {
+      "type": "delivery"
+    },
+    "content": "Implementación backend completo con lógica de negocio, JWT, validaciones, manejo de errores, estructura de arquitectura."
+  },
+  {
+    "section": "entrega_3",
+    "metadata": {
+      "type": "delivery"
+    },
+    "content": "WebSockets con Socket.io, interfaz UI, eventos en tiempo real, vistas: login, dashboard, perfil, retos, notificaciones, vehículos."
+  }
+]
