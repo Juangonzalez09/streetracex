@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import authRoutes from './infrastructure/http/routes/auth.routes';
 
 // 1. Inicialización de la aplicación
 const app = express();
@@ -12,7 +13,10 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json()); // Permite recibir JSON en el body
 
-// 3. Endpoint de prueba (Health Check)
+// 3. Rutas Api y Dominio
+app.use('/api/auth', authRoutes);
+
+// Endpoint de prueba (Health Check)
 app.get('/api/health', (req: Request, res: Response) => {
   res.status(200).json({
     success: true,
