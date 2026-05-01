@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- ENUMS ---
+
+enum RolUsuario {
+  PILOTO
+  ADMINISTRADOR
+}
+
+enum RangoPiloto {
+  D
+  C
+  B
+  A
+  S
+}
+
+enum EstadoUsuario {
+  ACTIVO
+  INACTIVO
+  SUSPENDIDO
+}
+
+enum TipoVehiculo {
+  AUTO
+  MOTO
+  MONOPATIN_ELECTRICO
+}
+
+enum TipoCarrera {
+  CUARTO_MILLA
+  VUELTAS
+  DERRAPE
+}
+
+enum EstadoReto {
+  PENDIENTE
+  ACEPTADO
+  RECHAZADO
+  EN_CURSO
+  COMPLETADO
+  CANCELADO
+}
+
+enum TipoNotificacion {
+  RETO_RECIBIDO
+  RETO_ACEPTADO
+  RETO_RECHAZADO
+  RESULTADO
+  RANGO_SUBIDO
+  NUEVA_PISTA
+  CAMBIO_CATEGORIA
+}
+
+// --- MODELOS ---
+
+model User {
+  id                 String        @id @default(uuid()) @db.Uuid
+  username           String        @unique @db.VarChar(50)
+  email              String        @unique @db.VarChar(255)
+  password_hash      String        @db.VarChar(255)
+  rol                RolUsuario    @default(PILOTO)
+  foto_perfil        String?       @db.VarChar(500)
+  zona_localidad     String?       @db.VarChar(100)
+  zona_ciudad        String?       @db.VarChar(100)
+  zona_estado        String?       @db.VarChar(100)
+  zona_pais          String?       @db.VarChar(100)
+  rango              RangoPiloto   @default(D)
+  categoria_id       String?       @db.Uuid
+  victorias          Int           @default(0)
+  derrotas           Int           @default(0)
+  retos_consecutivos Int           @default(0)
+  estado             EstadoUsuario @default(ACTIVO)
+  created_at         DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime      @updatedAt @db.Timestamptz(6)
+
+  // Un usuario pertenece opcionalmente a una categoría de competición
+  categoria          CompetitionCategory? @relation(fields: [categoria_id], references: [id], onDelete: SetNull)
+
+  // Un usuario posee muchos vehículos (max 3, regla de negocio en capa de aplicación)
+  vehicles           Vehicle[]
+
+  // Las notificaciones son propiedad del usuario, se eliminan en cascada
+  notifications      Notification[]
+
+  // Un usuario puede ser retador, retado o ganador en múltiples retos
+  challengesIssued   Challenge[] @relation("Retador")
+  challengesReceived Challenge[] @relation("Retado")
+  challengesWon      Challenge[] @relation("Ganador")
+
+  // Índice compuesto para queries de descubrimiento de pilotos
+  @@index([rango, estado])
+  @@map("users")
+}
+
+model CompetitionCategory {
+  id          String  @id @default(uuid()) @db.Uuid
+  nombre      String  @db.VarChar(100)
+  descripcion String? @db.Text
+  activo      Boolean @default(true)
+
+  users         User[]
+  notifications Notification[]
+
+  @@map("competition_categories")
+}
+
+model Vehicle {
+  id             String       @id @default(uuid()) @db.Uuid
+  user_id        String       @db.Uuid
+  tipo_vehiculo  TipoVehiculo
+  marca          String       @db.VarChar(100)
+  modelo         String       @db.VarChar(100)
+  anio           Int
+  color          String       @db.VarChar(50)
+  // Nullable porque los monopatines eléctricos no tienen placa
+  placa          String?      @unique @db.VarChar(20)
+  foto           String?      @db.VarChar(500)
+  modificaciones String?      @db.Text
+  activo         Boolean      @default(false)
+  created_at     DateTime     @default(now()) @db.Timestamptz(6)
+
+  // Al eliminar un usuario, sus vehículos se eliminan en cascada
+  owner User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  // Si un vehículo se elimina, las referencias en retos se nulean (vehiculo ya es nullable)
+  challengesRetador Challenge[] @relation("VehiculoRetador")
+  challengesRetado  Challenge[] @relation("VehiculoRetado")
+
+  @@index([user_id])
+  @@map("vehicles")
+}
+
+model Challenge {
+  id                  String      @id @default(uuid()) @db.Uuid
+  retador_id          String      @db.Uuid
+  retado_id           String      @db.Uuid
+  tipo_carrera        TipoCarrera
+  vehiculo_retador_id String?     @db.Uuid
+  vehiculo_retado_id  String?     @db.Uuid
+  estado              EstadoReto  @default(PENDIENTE)
+  ganador_id          String?     @db.Uuid
+  pista_id            String?     @db.Uuid
+  fecha_acordada      DateTime?   @db.Timestamptz(6)
+  notas               String?     @db.Text
+  created_at          DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime    @updatedAt @db.Timestamptz(6)
+
+  // Restrict por defecto: no se puede eliminar un usuario con retos en su historial
+  retador User @relation("Retador", fields: [retador_id], references: [id])
+  retado  User @relation("Retado", fields: [retado_id], references: [id])
+
+  // ganador_id es nullable: se asigna solo al completar el reto
+  ganador User? @relation("Ganador", fields: [ganador_id], references: [id], onDelete: SetNull)
+
+  // pista_id es nullable: el reto puede no tener pista asignada
+  pista Pista? @relation(fields: [pista_id], references: [id], onDelete: SetNull)
+
+  // Si se elimina un vehículo, la referencia se nulifica (campo ya es nullable)
+  vehiculo_retador Vehicle? @relation("VehiculoRetador", fields: [vehiculo_retador_id], references: [id], onDelete: SetNull)
+  vehiculo_retado  Vehicle? @relation("VehiculoRetado", fields: [vehiculo_retado_id], references: [id], onDelete: SetNull)
+
+  // Índices para consultas frecuentes de historial y retos activos por usuario
+  @@index([retador_id, estado])
+  @@index([retado_id, estado])
+  @@map("challenges")
+}
+
+model Pista {
+  id           String      @id @default(uuid()) @db.Uuid
+  nombre       String      @db.VarChar(100)
+  descripcion  String?     @db.Text
+  tipo_carrera TipoCarrera
+  dificultad   String?     @db.VarChar(50)
+  coordenadas  String?     @db.VarChar(100)
+  activo       Boolean     @default(true)
+  created_at   DateTime    @default(now()) @db.Timestamptz(6)
+
+  challenges    Challenge[]
+  notifications Notification[]
+
+  @@map("pistas")
+}
+
+model Notification {
+  id            String           @id @default(uuid()) @db.Uuid
+  user_id       String           @db.Uuid
+  tipo          TipoNotificacion
+  mensaje       String           @db.VarChar(500)
+  leida         Boolean          @default(false)
+  referencia_id String?          @db.Uuid
+  pista_id      String?          @db.Uuid
+  categoria_id  String?          @db.Uuid
+  created_at    DateTime         @default(now()) @db.Timestamptz(6)
+
+  // Al eliminar un usuario, sus notificaciones se eliminan en cascada
+  user      User                  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  // Si la pista o categoría se elimina, la referencia se nulifica
+  pista     Pista?                @relation(fields: [pista_id], references: [id], onDelete: SetNull)
+  categoria CompetitionCategory?  @relation(fields: [categoria_id], references: [id], onDelete: SetNull)
+
+  // Índice para queries de notificaciones no leídas por usuario
+  @@index([user_id, leida])
+  @@map("notifications")
+}
