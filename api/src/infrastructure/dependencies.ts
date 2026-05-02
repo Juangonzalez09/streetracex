@@ -1,13 +1,11 @@
-// 1. Ya NO importamos el InMemory. Ahora traemos el de Postgres:
-import { PostgresUserRepository } from './auth/PostgresUserRepository';
+import { PrismaClient } from '@prisma/client';
+import { PrismaUserRepository } from './auth/PrismaUserRepository';
 import { RegisterUserUseCase } from '../application/auth/RegisterUserUseCase';
 import { AuthController } from './http/controllers/AuthController';
 
-// 2. Instanciamos el NUEVO repositorio
-const userRepository = new PostgresUserRepository();
+const prisma = new PrismaClient();
 
-// 3. Le pasamos el de Postgres al Caso de Uso. ¡Al Caso de Uso NO LE IMPORTA el cambio!
+const userRepository = new PrismaUserRepository(prisma);
 const registerUserUseCase = new RegisterUserUseCase(userRepository);
 
-// 4. Exportamos el controlador
 export const authController = new AuthController(registerUserUseCase);
