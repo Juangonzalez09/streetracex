@@ -89,6 +89,7 @@ model User {
 
   // Las notificaciones son propiedad del usuario, se eliminan en cascada
   notifications      Notification[]
+  refreshTokens      RefreshToken[]
 
   // Un usuario puede ser retador, retado o ganador en múltiples retos
   challengesIssued   Challenge[] @relation("Retador")
@@ -98,6 +99,21 @@ model User {
   // Índice compuesto para queries de descubrimiento de pilotos
   @@index([rango, estado])
   @@map("users")
+}
+
+model RefreshToken {
+  id                    String    @id @default(uuid()) @db.Uuid
+  user_id               String    @db.Uuid
+  token_hash            String    @unique @db.VarChar(255)
+  expires_at            DateTime  @db.Timestamptz(6)
+  revoked_at            DateTime? @db.Timestamptz(6)
+  replaced_by_token_hash String?  @db.VarChar(255)
+  created_at            DateTime  @default(now()) @db.Timestamptz(6)
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, expires_at])
+  @@map("refresh_tokens")
 }
 
 model CompetitionCategory {

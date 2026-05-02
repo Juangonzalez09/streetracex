@@ -7,10 +7,13 @@ import authRoutes from './infrastructure/http/routes/auth.routes';
 // 1. Inicialización de la aplicación
 const app = express();
 const PORT = process.env.PORT || 3000;
+const corsOrigin = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
+  : true;
 
 // 2. Middlewares globales
 app.use(helmet());
-app.use(cors());
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json()); // Permite recibir JSON en el body
 
 // 3. Rutas Api y Dominio
