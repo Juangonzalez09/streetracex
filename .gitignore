@@ -1,12 +1,22 @@
 # Dependencias
+node_modules/
 api/node_modules/
+
+# Lock files (cada dev instala con su entorno)
+package-lock.json
+api/package-lock.json
 
 # Entorno compilado
 api/dist/
 
-# Variables de entorno 
+# Variables de entorno
 .env
+.env.local
 
 # Logs y SO
 npm-debug.log*
+*.log
 .DS_Store
+
+# Prisma: cliente generado (se regenera con prisma generate)
+/app/generated/prisma
