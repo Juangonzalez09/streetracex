@@ -159,3 +159,74 @@ npm start
 - Refresh: ✅
 - Logout: ✅
 - Build TypeScript: ✅
+
+---
+
+## Actualización incremental (continuación del proyecto)
+
+### Documentación API (Swagger/OpenAPI) refinada
+- Se consolidó documentación modular en `api/src/infrastructure/http/docs/`:
+  - `openapi.ts`
+  - `paths/auth.paths.ts`
+  - `schemas/auth.schemas.ts`
+  - `schemas/common.schemas.ts`
+  - `swagger.ts`
+- Swagger quedó expuesto en:
+  - `GET /api/docs`
+- Se removió `GET /api/openapi.json` para simplificar.
+- Se añadieron ejemplos de request/response, descripciones, `operationId`, tags y mejoras de UI Swagger:
+  - `displayRequestDuration`
+  - `filter`
+  - `docExpansion: list`
+
+### Ajuste de seguridad/contrato en Register
+- `POST /api/auth/register` ahora devuelve payload mínimo:
+  - `id`, `username`, `email`, `createdAt`
+- Se actualizó schema OpenAPI de respuesta de register para reflejar ese cambio.
+
+### Validación HTTP con Zod en endpoints Auth
+- Se reemplazaron middlewares manuales de auth por validación genérica con Zod:
+  - Nuevo middleware: `api/src/infrastructure/http/middlewares/validateBody.ts`
+  - Schemas:
+    - `api/src/infrastructure/http/schemas/auth/registerUserBodySchema.ts`
+    - `api/src/infrastructure/http/schemas/auth/loginUserBodySchema.ts`
+- Eliminados:
+  - `validateRegisterUserBody.ts`
+  - `validateLoginUserBody.ts`
+- `auth.routes.ts` ahora usa `validateBody(...)`.
+
+### Primer paso post-login implementado: módulo Profile
+- Se implementó solo el paso 1 del flow acordado (uno por uno), dejando pendiente vehículos y siguientes módulos.
+- Rutas nuevas:
+  - `GET /api/profile/me` (protegida)
+  - `PATCH /api/profile/me` (protegida)
+  - `DELETE /api/profile/me` (protegida, desactiva cuenta)
+  - `GET /api/profile/:userId` (protegida, perfil público)
+- Middleware JWT requerido:
+  - `api/src/infrastructure/http/middlewares/auth/requireAuth.ts`
+  - Inyecta `req.auth` (`userId`, `email`, `rol`) usando tipos en:
+    - `api/src/shared/http/AuthContext.ts`
+    - `api/src/shared/types/express.d.ts`
+- Capa profile agregada:
+  - `domain/profile/ProfileRepository.ts`
+  - `application/profile/*UseCase.ts`
+  - `infrastructure/profile/PrismaProfileRepository.ts`
+  - `infrastructure/http/controllers/ProfileController.ts`
+  - `infrastructure/http/routes/profile.routes.ts`
+  - `infrastructure/http/schemas/profile/updateMyProfileBodySchema.ts`
+  - `infrastructure/http/schemas/common/userIdParamSchema.ts`
+- Integración realizada en:
+  - `infrastructure/dependencies.ts`
+  - `main.ts` con `app.use('/api/profile', profileRoutes)`
+- `validateBody.ts` evolucionó para soportar también:
+  - `validateParams(...)`
+  - `validateQuery(...)`
+
+### Nota de alcance actual
+- Por decisión de ejecución secuencial, **solo se avanzó hasta Profile**.
+- Módulos pendientes para siguientes pasos:
+  - Vehículos
+  - Descubrimiento
+  - Retos
+  - Notificaciones
+  - Ampliación de OpenAPI para esos módulos

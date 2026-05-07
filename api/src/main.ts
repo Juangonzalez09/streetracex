@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import authRoutes from './infrastructure/http/routes/auth.routes';
+import profileRoutes from './infrastructure/http/routes/profile.routes';
 import { registerSwagger } from './infrastructure/http/docs/swagger';
 
 // 1. Inicialización de la aplicación
@@ -20,6 +21,7 @@ registerSwagger(app);
 
 // 3. Rutas Api y Dominio
 app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
 
 // 4. Arranque del servidor
 app.listen(PORT, () => {
