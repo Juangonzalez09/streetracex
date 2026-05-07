@@ -222,11 +222,42 @@ npm start
   - `validateParams(...)`
   - `validateQuery(...)`
 
-### Nota de alcance actual
-- Por decisión de ejecución secuencial, **solo se avanzó hasta Profile**.
-- Módulos pendientes para siguientes pasos:
-  - Vehículos
-  - Descubrimiento
-  - Retos
-  - Notificaciones
-  - Ampliación de OpenAPI para esos módulos
+### Actualización incremental (módulo Vehículos)
+- Se implementó el módulo `rf_vehiculos` siguiendo la misma línea hexagonal del proyecto:
+  - `domain/vehicle/VehicleRepository.ts`
+  - `application/vehicle/*UseCase.ts`
+  - `infrastructure/vehicle/PrismaVehicleRepository.ts`
+  - `infrastructure/http/controllers/VehicleController.ts`
+  - `infrastructure/http/routes/vehicle.routes.ts`
+  - `infrastructure/http/schemas/vehicle/*`
+  - `infrastructure/http/schemas/common/vehicleIdParamSchema.ts`
+- Integración realizada en:
+  - `infrastructure/dependencies.ts`
+  - `main.ts` con `app.use('/api/vehicles', vehicleRoutes)`
+
+### Endpoints de Vehículos implementados (protegidos con JWT)
+- `GET /api/vehicles` (listar mis vehículos)
+- `POST /api/vehicles` (crear vehículo)
+- `PATCH /api/vehicles/:vehicleId` (editar vehículo)
+- `DELETE /api/vehicles/:vehicleId` (eliminar vehículo)
+- `PATCH /api/vehicles/:vehicleId/activate` (marcar vehículo activo)
+
+### Reglas de negocio aplicadas en Vehículos
+- Máximo **3 vehículos** por usuario.
+- Solo **1 vehículo activo** por usuario (al activar uno, los demás quedan inactivos).
+- `placa` obligatoria para `AUTO` y `MOTO`.
+- `placa` no aplica para `MONOPATIN_ELECTRICO`.
+- Conflicto de placa única manejado con respuesta de negocio clara.
+
+### Estado de avance actualizado
+- Auth: ✅
+- Profile: ✅
+- Vehículos: ✅
+
+### Pendiente para siguientes pasos (orden secuencial acordado)
+- Ajuste pendiente de Profile público (según regla de negocio): incluir datos completos esperados al exponer perfil.
+- Descubrimiento.
+- Retos.
+- Resultado del reto + actualización de rango.
+- Notificaciones.
+- Ampliación de OpenAPI para módulos nuevos.
