@@ -153,24 +153,29 @@ Salida esperada:
 🏁 Motor encendido! Servidor de Street Race X corriendo en http://localhost:3000
 ```
 
-### Paso 7 — Verificar que funciona
+### Paso 7 — Verificar que la documentación responde
 
 ```bash
-curl http://localhost:3000/api/health
+curl http://localhost:3000/api/docs
 ```
 
 Respuesta esperada:
 
-```json
-{
-  "success": true,
-  "message": "Street Race X API funcionando correctamente",
-  "data": {
-    "timestamp": "2026-05-02T00:00:00.000Z",
-    "environment": "development"
-  }
-}
+```html
+<!DOCTYPE html>
+<html>
+  ...
+</html>
 ```
+
+### Paso 8 — Abrir la documentación de API
+
+Con el servidor levantado, abre:
+
+- Swagger UI: `http://localhost:3000/api/docs`
+
+> La documentación se define en `api/src/infrastructure/http/docs/` y se modulariza en:
+> `openapi.ts`, `paths/` y `schemas/`.
 
 ---
 
