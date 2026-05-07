@@ -27,5 +27,8 @@ app.use('/api/vehicles', vehicleRoutes);
 
 // 4. Arranque del servidor
 app.listen(PORT, () => {
-  console.log(`->>>>>> Motor encendido! Servidor de Street Race X corriendo en http://localhost:${PORT}/api/docs/`);
+  const mode = process.env.NODE_ENV || 'development';
+  console.log(`->>>>>> 🏎️ Street Race X encendido!`);
+  console.log(`->>>>>> Modo: ${mode}`);
+  console.log(`->>>>>> Puerto: ${PORT}`);
 });

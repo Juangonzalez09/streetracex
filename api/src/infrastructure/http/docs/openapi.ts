@@ -16,8 +16,8 @@ export const openApiDocument = {
   },
   servers: [
     {
-      url: 'http://localhost:3000',
-      description: 'Local development',
+      url: process.env.API_URL || 'http://localhost:3000',
+      description: process.env.API_URL ? 'Servidor de Producción' : 'Desarrollo Local',
     },
   ],
   tags: [
