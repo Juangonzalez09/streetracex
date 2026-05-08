@@ -1,5 +1,5 @@
 export const matchmakingPaths = {
-  '/api/matchmaking': {
+  '/api/v1/matchmaking': {
     get: {
       tags: ['Matchmaking'],
       summary: 'Lista rivales compatibles',

@@ -10,6 +10,7 @@ import { AcceptChallengeUseCase } from '../application/challenge/AcceptChallenge
 import { AdminResolveUseCase } from '../application/challenge/AdminResolveUseCase';
 import { CancelChallengeUseCase } from '../application/challenge/CancelChallengeUseCase';
 import { GetMyChallengesUseCase } from '../application/challenge/GetMyChallengesUseCase';
+import { GetChallengeByIdUseCase } from '../application/challenge/GetChallengeByIdUseCase';
 import { RejectChallengeUseCase } from '../application/challenge/RejectChallengeUseCase';
 import { ReportResultUseCase } from '../application/challenge/ReportResultUseCase';
 import { SendChallengeUseCase } from '../application/challenge/SendChallengeUseCase';
@@ -128,6 +129,7 @@ const startChallengeUseCase = new StartChallengeUseCase(challengeRepository);
 const reportResultUseCase = new ReportResultUseCase(challengeRepository, profileRepository, notificationRepository);
 const adminResolveUseCase = new AdminResolveUseCase(challengeRepository, profileRepository, notificationRepository);
 const getMyChallengesUseCase = new GetMyChallengesUseCase(challengeRepository);
+const getChallengeByIdUseCase = new GetChallengeByIdUseCase(challengeRepository);
 
 export const challengeController = new ChallengeController(
   sendChallengeUseCase,
@@ -138,4 +140,5 @@ export const challengeController = new ChallengeController(
   reportResultUseCase,
   adminResolveUseCase,
   getMyChallengesUseCase,
+  getChallengeByIdUseCase,
 );

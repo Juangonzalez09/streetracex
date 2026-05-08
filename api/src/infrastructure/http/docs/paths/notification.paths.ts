@@ -1,9 +1,10 @@
 export const notificationPaths = {
-  '/api/notifications': {
+  '/api/v1/notifications': {
     get: {
       tags: ['Notifications'],
       summary: 'Listar mis notificaciones',
       description: 'Retorna todas las notificaciones del piloto autenticado, ordenadas por fecha descendente. Usa `soloNoLeidas=true` para ver solo las pendientes.',
+      operationId: 'listNotifications',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -23,11 +24,12 @@ export const notificationPaths = {
     },
   },
 
-  '/api/notifications/read-all': {
+  '/api/v1/notifications/read-all': {
     patch: {
       tags: ['Notifications'],
       summary: 'Marcar todas como leídas',
       description: 'Marca todas las notificaciones no leídas del piloto autenticado como leídas.',
+      operationId: 'markAllNotificationsRead',
       security: [{ bearerAuth: [] }],
       responses: {
         200: {
@@ -39,10 +41,11 @@ export const notificationPaths = {
     },
   },
 
-  '/api/notifications/{notificationId}/read': {
+  '/api/v1/notifications/{notificationId}/read': {
     patch: {
       tags: ['Notifications'],
       summary: 'Marcar una notificación como leída',
+      operationId: 'markNotificationRead',
       security: [{ bearerAuth: [] }],
       parameters: [
         {

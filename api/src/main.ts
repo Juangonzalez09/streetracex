@@ -9,6 +9,9 @@ import matchmakingRoutes from './infrastructure/http/routes/matchmaking.routes';
 import challengeRoutes from './infrastructure/http/routes/challenge.routes';
 import trackRoutes from './infrastructure/http/routes/track.routes';
 import notificationRoutes from './infrastructure/http/routes/notification.routes';
+import adminRoutes from './infrastructure/http/routes/admin.routes';
+import { requireAuth } from './infrastructure/http/middlewares/auth/requireAuth';
+import { requireRole } from './infrastructure/http/middlewares/auth/requireRole';
 import { registerSwagger } from './infrastructure/http/docs/swagger';
 
 // 1. Inicialización de la aplicación
@@ -21,17 +24,18 @@ const corsOrigin = process.env.CORS_ORIGIN
 // 2. Middlewares globales
 app.use(helmet());
 app.use(cors({ origin: corsOrigin, credentials: true }));
-app.use(express.json()); // Permite recibir JSON en el body
+app.use(express.json());
 registerSwagger(app);
 
-// 3. Rutas Api y Dominio
-app.use('/api/auth', authRoutes);
-app.use('/api/profile', profileRoutes);
-app.use('/api/vehicles', vehicleRoutes);
-app.use('/api/matchmaking', matchmakingRoutes);
-app.use('/api/challenges', challengeRoutes);
-app.use('/api/tracks', trackRoutes);
-app.use('/api/notifications', notificationRoutes);
+// 3. Rutas Api v1
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/profile', profileRoutes);
+app.use('/api/v1/vehicles', vehicleRoutes);
+app.use('/api/v1/matchmaking', matchmakingRoutes);
+app.use('/api/v1/challenges', challengeRoutes);
+app.use('/api/v1/tracks', trackRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/admin', requireAuth, requireRole('ADMINISTRADOR'), adminRoutes);
 
 // 4. Arranque del servidor
 app.listen(PORT, () => {

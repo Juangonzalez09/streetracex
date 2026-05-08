@@ -156,6 +156,20 @@ export const challengeSchemas = {
     },
   },
 
+  ChallengeStatusRequest: {
+    type: 'object',
+    description: 'Payload para cambiar el estado de un reto. Las transiciones permitidas dependen del rol del piloto.',
+    required: ['estado'],
+    properties: {
+      estado: {
+        type: 'string',
+        enum: ['ACEPTADO', 'RECHAZADO', 'CANCELADO', 'EN_CURSO'],
+        description: 'ACEPTADO/RECHAZADO: solo el retado desde PENDIENTE. CANCELADO: cualquier participante desde PENDIENTE o ACEPTADO. EN_CURSO: solo el retador desde ACEPTADO.',
+        example: 'ACEPTADO',
+      },
+    },
+  },
+
   AdminResolveRequest: {
     type: 'object',
     description: 'Resolución de disputa por administrador. Fuerza el resultado del reto.',
