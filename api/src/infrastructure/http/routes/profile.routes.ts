@@ -11,7 +11,7 @@ router.get('/me', requireAuth, (req, res) => profileController.getMyProfile(req,
 router.patch('/me', requireAuth, validateBody(updateMyProfileBodySchema), (req, res) =>
   profileController.updateMyProfile(req, res)
 );
-router.delete('/me', requireAuth, (req, res) => profileController.deactivateMyProfile(req, res));
+router.patch('/me/deactivate', requireAuth, (req, res) => profileController.deactivateMyProfile(req, res));
 router.get('/:userId', requireAuth, validateParams(userIdParamSchema), (req, res) =>
   profileController.getPublicProfile(req, res)
 );

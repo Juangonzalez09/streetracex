@@ -1,5 +1,5 @@
 export const vehiclePaths = {
-  '/api/vehicles': {
+  '/api/v1/vehicles': {
     get: {
       tags: ['Vehicles'],
       summary: 'Lista mis vehiculos',
@@ -234,7 +234,7 @@ export const vehiclePaths = {
     },
   },
 
-  '/api/vehicles/{vehicleId}': {
+  '/api/v1/vehicles/{vehicleId}': {
     patch: {
       tags: ['Vehicles'],
       summary: 'Actualiza un vehiculo',
@@ -413,7 +413,7 @@ export const vehiclePaths = {
           description: 'Vehiculo eliminado',
           content: {
             'application/json': {
-              schema: { $ref: '#/components/schemas/ApiError' },
+              schema: { $ref: '#/components/schemas/ApiSuccess' },
               examples: {
                 ok: {
                   summary: 'Eliminacion exitosa',
@@ -469,7 +469,7 @@ export const vehiclePaths = {
     },
   },
 
-  '/api/vehicles/{vehicleId}/activate': {
+  '/api/v1/vehicles/{vehicleId}/activate': {
     patch: {
       tags: ['Vehicles'],
       summary: 'Activa un vehiculo',

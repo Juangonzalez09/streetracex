@@ -5,6 +5,7 @@ import { matchmakingPaths } from './paths/matchmaking.paths';
 import { challengePaths } from './paths/challenge.paths';
 import { trackPaths } from './paths/track.paths';
 import { notificationPaths } from './paths/notification.paths';
+import { adminPaths } from './paths/admin.paths';
 import { authSchemas } from './schemas/auth.schemas';
 import { profileSchemas } from './schemas/profile.schemas';
 import { vehicleSchemas } from './schemas/vehicle.schemas';
@@ -40,7 +41,7 @@ export const openApiDocument = {
     { name: 'Challenges', description: 'Retos entre pilotos: enviar, aceptar, iniciar, reportar resultado y resolucion de disputas' },
     { name: 'Tracks', description: 'Pistas de carrera: listado y gestión por administrador' },
     { name: 'Notifications', description: 'Notificaciones internas del piloto' },
-    { name: 'Ranking', description: 'Sistema de rangos D-S (proximamente)' },
+    { name: 'Admin', description: 'Operaciones exclusivas del administrador' },
   ],
   externalDocs: {
     description: 'Repositorio del proyecto',
@@ -54,6 +55,7 @@ export const openApiDocument = {
     ...challengePaths,
     ...trackPaths,
     ...notificationPaths,
+    ...adminPaths,
   },
   components: {
     securitySchemes: {
