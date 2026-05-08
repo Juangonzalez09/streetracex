@@ -11,7 +11,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "simulate": "tsx scripts/simulate.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
