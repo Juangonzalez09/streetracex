@@ -40,6 +40,7 @@ export interface UpdateVehicleInput {
 export interface VehicleRepository {
   listByUserId(userId: string): Promise<Vehicle[]>;
   countByUserId(userId: string): Promise<number>;
+  findActiveByUserId(userId: string): Promise<Vehicle | null>;
   create(userId: string, input: CreateVehicleInput): Promise<Vehicle>;
   findByIdAndUserId(vehicleId: string, userId: string): Promise<Vehicle | null>;
   update(vehicleId: string, userId: string, input: UpdateVehicleInput): Promise<Vehicle | null>;

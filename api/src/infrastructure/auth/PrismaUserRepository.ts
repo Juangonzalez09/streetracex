@@ -27,6 +27,9 @@ export class PrismaUserRepository implements UserRepository {
           victorias: user.victorias,
           derrotas: user.derrotas,
           retos_consecutivos: user.retosConsecutivos,
+          matchmakingProfile: {
+            create: {},
+          },
         },
       });
 

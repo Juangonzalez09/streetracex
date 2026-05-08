@@ -90,6 +90,7 @@ model User {
   // Las notificaciones son propiedad del usuario, se eliminan en cascada
   notifications      Notification[]
   refreshTokens      RefreshToken[]
+  matchmakingProfile MatchmakingProfile?
 
   // Un usuario puede ser retador, retado o ganador en múltiples retos
   challengesIssued   Challenge[] @relation("Retador")
@@ -99,6 +100,19 @@ model User {
   // Índice compuesto para queries de descubrimiento de pilotos
   @@index([rango, estado])
   @@map("users")
+}
+
+model MatchmakingProfile {
+  id              String   @id @default(uuid()) @db.Uuid
+  user_id         String   @unique @db.Uuid
+  discoverable    Boolean  @default(true)
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([discoverable])
+  @@map("matchmaking_profiles")
 }
 
 model RefreshToken {
@@ -163,6 +177,8 @@ model Challenge {
   vehiculo_retado_id  String?     @db.Uuid
   estado              EstadoReto  @default(PENDIENTE)
   ganador_id          String?     @db.Uuid
+  reporte_retador_id  String?     @db.Uuid
+  reporte_retado_id   String?     @db.Uuid
   pista_id            String?     @db.Uuid
   fecha_acordada      DateTime?   @db.Timestamptz(6)
   notas               String?     @db.Text
