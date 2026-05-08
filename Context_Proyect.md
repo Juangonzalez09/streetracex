@@ -253,11 +253,143 @@ npm start
 - Auth: ✅
 - Profile: ✅
 - Vehículos: ✅
+ - Matchmaking: ✅
 
 ### Pendiente para siguientes pasos (orden secuencial acordado)
 - Ajuste pendiente de Profile público (según regla de negocio): incluir datos completos esperados al exponer perfil.
-- Descubrimiento.
-- Retos.
+- Retos (challenges) y su flujo.
 - Resultado del reto + actualización de rango.
 - Notificaciones.
 - Ampliación de OpenAPI para módulos nuevos.
+- Pruebas manuales del flujo completo en un ambiente corriendo.
+
+---
+
+## Actualización incremental (módulo Matchmaking)
+- Se renombró el concepto de “Discovery” a **Matchmaking** (acuerdo de nombres).
+- Se implementó el módulo de emparejamiento siguiendo la arquitectura hexagonal:
+  - `domain/matchmaking/MatchmakingRepository.ts`
+  - `application/matchmaking/ListMatchmakingPilotsUseCase.ts`
+  - `infrastructure/matchmaking/PrismaMatchmakingRepository.ts`
+  - `infrastructure/http/controllers/MatchmakingController.ts`
+  - `infrastructure/http/routes/matchmaking.routes.ts`
+  - `infrastructure/http/schemas/matchmaking/*`
+- Ruta protegida:
+  - `GET /api/matchmaking` (query con paginación y filtros por zona)
+- Validación HTTP con Zod:
+  - `listMatchmakingQuerySchema.ts` con `page`, `limit` (max 50) y filtros `zonaLocalidad`, `zonaCiudad`, `zonaEstado`, `zonaPais`.
+- Comportamiento de matchmaking:
+  - Filtra usuarios **PILOTO** y **ACTIVO**.
+  - Misma `rango` que el usuario logueado.
+  - Debe tener vehículo **activo** y se empareja por **tipo de vehículo activo**.
+  - Respeta `matchmakingProfile.discoverable = true`.
+  - Soporta paginación (page/limit) y devuelve total y páginas.
+- Integración:
+  - Se registró el controller y use case en `infrastructure/dependencies.ts`.
+  - Se agregó `app.use('/api/matchmaking', matchmakingRoutes)` en `main.ts`.
+- Documentación OpenAPI:
+  - Se añadieron schemas y paths correspondientes para `GET /api/matchmaking`.
+
+---
+
+## Cambios Prisma / BD (Matchmaking)
+- Se creó modelo `MatchmakingProfile` en `prisma/schema.prisma`.
+- Se relacionó con `User` (uno a uno, `user_id` unique).
+- Migración creada:
+  - `prisma/migrations/20260507193000_add_matchmaking_profiles/migration.sql`
+- Ajuste en registro de usuarios:
+  - Al registrar, se crea `matchmakingProfile` por defecto (`discoverable: true`).
+
+---
+
+## Problemas detectados y correcciones aplicadas
+- Error de TypeScript en repositorio de matchmaking:
+  - Se corrigieron tipos y mapeo de resultados de Prisma con tipado explícito.
+- Prisma no encontraba tabla de matchmaking:
+  - Se corrigió agregando el schema y migración correspondiente.
+- Windows EPERM en Prisma:
+  - Se solucionó cerrando procesos `node.exe` que mantenían el engine bloqueado y regenerando Prisma client.
+
+---
+
+## Archivo de pruebas manuales (nuevo)
+- Se creó `TESTING_STEP_BY_STEP.md` en la raíz del proyecto.
+- Incluye el paso a paso para probar todos los endpoints:
+  - Auth (register/login/refresh/logout)
+  - Profile (me/public/update/deactivate)
+  - Vehicles (create/list/update/activate/delete)
+  - Matchmaking (list con filtros)
+
+---
+
+## Paso a paso super detallado de lo que falta (siguientes pasos)
+1. **Ajuste de Profile público (revisar regla de negocio)**
+   - Revisar qué campos exactos se deben exponer en `GET /api/profile/:userId`.
+   - Confirmar si debe incluir:
+     - estadísticas (retos ganados/perdidos)
+     - vehículos (ordenar activo primero)
+     - rango actual y estado
+   - Ajustar use case y repositorio si hace falta.
+   - Actualizar OpenAPI y validar con Zod si hay cambios en el output.
+
+2. **Retos (Challenges) - flujo completo**
+   - Revisar el schema actual de Prisma para `Challenge` (o definirlo si falta).
+   - Definir estados del reto (ej: PENDIENTE, ACEPTADO, RECHAZADO, CANCELADO, FINALIZADO).
+   - Crear:
+     - `domain/challenge/ChallengeRepository.ts`
+     - `application/challenge/*UseCase.ts` (crear reto, aceptar, rechazar, cancelar, finalizar)
+     - `infrastructure/challenge/PrismaChallengeRepository.ts`
+     - `infrastructure/http/controllers/ChallengeController.ts`
+     - `infrastructure/http/routes/challenge.routes.ts`
+     - `infrastructure/http/schemas/challenge/*` con Zod
+   - Reglas mínimas:
+     - Solo entre pilotos de mismo rango y tipo de vehículo.
+     - Evitar duplicados activos entre los mismos usuarios.
+     - Solo dueño puede cancelar; solo receptor puede aceptar/rechazar.
+   - Conectar en `dependencies.ts` y `main.ts`.
+   - Documentar en OpenAPI.
+
+3. **Resultado del reto y actualización de rango**
+   - Definir la lógica de resultado (ganador/perdedor).
+   - Actualizar estadísticas del perfil.
+   - Actualizar `rango` si aplica (reglas del negocio).
+   - Documentar y exponer endpoint si corresponde.
+
+4. **Notificaciones**
+   - Definir tipo de notificaciones (reto recibido, aceptado, rechazado, finalizado).
+   - Implementar entidad y endpoints básicos (listar, marcar leídas).
+   - Mantener la misma arquitectura hexagonal.
+
+5. **Pruebas manuales completas**
+   - Ejecutar el archivo `TESTING_STEP_BY_STEP.md` de inicio a fin.
+   - Confirmar que matchmaking retorna pilotos cuando:
+     - hay al menos 2 usuarios con mismo rango
+     - ambos tienen vehículo activo del mismo tipo
+   - Verificar que refresh token rota y logout invalida.
+
+---
+
+## Recomendaciones y reglas de implementación (muy importante)
+- **Arquitectura hexagonal estricta**:
+  - `domain` define contratos (interfaces) y entidades.
+  - `application` contiene la lógica (use cases).
+  - `infrastructure` implementa persistencia y HTTP.
+  - Nada de lógica de negocio en controllers.
+- **Código simple y entendible**:
+  - No sobre-ingeniería, evitar abstracciones innecesarias.
+  - Claridad primero, aunque haya repetición controlada.
+- **Validación con Zod**:
+  - Usar `validateBody`, `validateParams`, `validateQuery`.
+  - Schemas por endpoint en `infrastructure/http/schemas`.
+- **Prisma siempre primero**:
+  - Si se crea funcionalidad nueva, primero crear/ajustar schema de Prisma,
+    luego migración, luego `prisma generate`.
+- **Errores explícitos y mensajes claros**:
+  - No exponer errores internos en responses.
+  - Manejar errores de negocio con mensajes definidos.
+- **Consistencia de rutas y DI**:
+  - Registrar nuevos controllers en `dependencies.ts`.
+  - Agregar rutas en `main.ts`.
+- **Documentación OpenAPI siempre actualizada**:
+  - Agregar schemas y paths para cualquier endpoint nuevo.
+  - Mantener ejemplos de request/response.

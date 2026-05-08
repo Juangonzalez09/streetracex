@@ -1,5 +1,9 @@
 import { authPaths } from './paths/auth.paths';
+import { vehiclePaths } from './paths/vehicle.paths';
+import { matchmakingPaths } from './paths/matchmaking.paths';
 import { authSchemas } from './schemas/auth.schemas';
+import { vehicleSchemas } from './schemas/vehicle.schemas';
+import { matchmakingSchemas } from './schemas/matchmaking.schemas';
 import { commonSchemas } from './schemas/common.schemas';
 
 export const openApiDocument = {
@@ -22,7 +26,8 @@ export const openApiDocument = {
   ],
   tags: [
     { name: 'Auth', description: 'Autenticacion y gestion de sesion' },
-    { name: 'Vehicles', description: 'Gestion de vehiculos (proximamente)' },
+    { name: 'Vehicles', description: 'Gestion de vehiculos del piloto' },
+    { name: 'Matchmaking', description: 'Emparejamiento de pilotos por reglas de negocio' },
     { name: 'Challenges', description: 'Retos y emparejamiento (proximamente)' },
     { name: 'Ranking', description: 'Sistema de rangos D-S (proximamente)' },
     { name: 'Notifications', description: 'Eventos y alertas (proximamente)' },
@@ -33,9 +38,17 @@ export const openApiDocument = {
   },
   paths: {
     ...authPaths,
+    ...vehiclePaths,
+    ...matchmakingPaths,
   },
   components: {
     securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Access token JWT obtenido en login o refresh',
+      },
       refreshTokenCookie: {
         type: 'apiKey',
         in: 'cookie',
@@ -46,6 +59,8 @@ export const openApiDocument = {
     schemas: {
       ...commonSchemas,
       ...authSchemas,
+      ...vehicleSchemas,
+      ...matchmakingSchemas,
     },
   },
 } as const;

@@ -19,6 +19,9 @@ import { ListMyVehiclesUseCase } from '../application/vehicle/ListMyVehiclesUseC
 import { UpdateMyVehicleUseCase } from '../application/vehicle/UpdateMyVehicleUseCase';
 import { DeleteMyVehicleUseCase } from '../application/vehicle/DeleteMyVehicleUseCase';
 import { SetActiveVehicleUseCase } from '../application/vehicle/SetActiveVehicleUseCase';
+import { PrismaMatchmakingRepository } from './matchmaking/PrismaMatchmakingRepository';
+import { ListMatchmakingPilotsUseCase } from '../application/matchmaking/ListMatchmakingPilotsUseCase';
+import { MatchmakingController } from './http/controllers/MatchmakingController';
 
 const prisma = new PrismaClient();
 
@@ -26,6 +29,7 @@ const userRepository = new PrismaUserRepository(prisma);
 const refreshTokenRepository = new PrismaRefreshTokenRepository(prisma);
 const profileRepository = new PrismaProfileRepository(prisma);
 const vehicleRepository = new PrismaVehicleRepository(prisma);
+const matchmakingRepository = new PrismaMatchmakingRepository(prisma);
 const registerUserUseCase = new RegisterUserUseCase(userRepository);
 const loginUserUseCase = new LoginUserUseCase(userRepository, refreshTokenRepository);
 const refreshSessionUseCase = new RefreshSessionUseCase(userRepository, refreshTokenRepository);
@@ -41,6 +45,7 @@ const listMyVehiclesUseCase = new ListMyVehiclesUseCase(vehicleRepository);
 const updateMyVehicleUseCase = new UpdateMyVehicleUseCase(vehicleRepository);
 const deleteMyVehicleUseCase = new DeleteMyVehicleUseCase(vehicleRepository);
 const setActiveVehicleUseCase = new SetActiveVehicleUseCase(vehicleRepository);
+const listMatchmakingPilotsUseCase = new ListMatchmakingPilotsUseCase(matchmakingRepository);
 
 export const authController = new AuthController(
   registerUserUseCase,
@@ -63,3 +68,5 @@ export const vehicleController = new VehicleController(
   deleteMyVehicleUseCase,
   setActiveVehicleUseCase
 );
+
+export const matchmakingController = new MatchmakingController(listMatchmakingPilotsUseCase);

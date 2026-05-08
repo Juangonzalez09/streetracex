@@ -1,3 +1,4 @@
+
 import { VehicleType } from '../../domain/vehicle/VehicleRepository';
 
 export const validateVehiclePlateRules = (tipoVehiculo: VehicleType, placa: string | null) => {
