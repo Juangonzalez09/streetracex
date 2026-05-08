@@ -13,6 +13,27 @@ const challengeInclude = {
   ganador: { select: { id: true, username: true, rango: true } },
 } as const;
 
+type ChallengeRow = {
+  id: string;
+  retador_id: string;
+  retado_id: string;
+  tipo_carrera: string;
+  vehiculo_retador_id: string | null;
+  vehiculo_retado_id: string | null;
+  estado: string;
+  ganador_id: string | null;
+  reporte_retador_id: string | null;
+  reporte_retado_id: string | null;
+  pista_id: string | null;
+  notas: string | null;
+  fecha_acordada: Date | null;
+  created_at: Date;
+  updated_at: Date;
+  retador: { id: string; username: string; rango: string };
+  retado: { id: string; username: string; rango: string };
+  ganador: { id: string; username: string; rango: string } | null;
+};
+
 export class PrismaChallengeRepository implements ChallengeRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
@@ -23,6 +44,7 @@ export class PrismaChallengeRepository implements ChallengeRepository {
         retado_id: data.retadoId,
         tipo_carrera: data.tipoCarrera,
         vehiculo_retador_id: data.vehiculoRetadorId,
+        pista_id: data.pistaId ?? null,
         notas: data.notas ?? null,
         fecha_acordada: data.fechaAcordada ?? null,
       },
@@ -58,7 +80,7 @@ export class PrismaChallengeRepository implements ChallengeRepository {
       orderBy: { created_at: 'desc' },
     });
 
-    return rows.map((row) => this.toItem(row));
+    return (rows as ChallengeRow[]).map((row) => this.toItem(row));
   }
 
   async hasActiveChallengeBetween(retadorId: string, retadoId: string): Promise<boolean> {
@@ -119,25 +141,7 @@ export class PrismaChallengeRepository implements ChallengeRepository {
     return this.toItem(row);
   }
 
-  private toItem(row: {
-    id: string;
-    retador_id: string;
-    retado_id: string;
-    tipo_carrera: string;
-    vehiculo_retador_id: string | null;
-    vehiculo_retado_id: string | null;
-    estado: string;
-    ganador_id: string | null;
-    reporte_retador_id: string | null;
-    reporte_retado_id: string | null;
-    notas: string | null;
-    fecha_acordada: Date | null;
-    created_at: Date;
-    updated_at: Date;
-    retador: { id: string; username: string; rango: string };
-    retado: { id: string; username: string; rango: string };
-    ganador: { id: string; username: string; rango: string } | null;
-  }): ChallengeItem {
+  private toItem(row: ChallengeRow): ChallengeItem {
     return {
       id: row.id,
       retadorId: row.retador_id,
@@ -149,6 +153,7 @@ export class PrismaChallengeRepository implements ChallengeRepository {
       ganadorId: row.ganador_id,
       reporteRetadorId: row.reporte_retador_id,
       reporteRetadoId: row.reporte_retado_id,
+      pistaId: row.pista_id,
       notas: row.notas,
       fechaAcordada: row.fecha_acordada,
       createdAt: row.created_at,

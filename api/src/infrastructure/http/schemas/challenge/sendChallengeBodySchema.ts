@@ -6,6 +6,7 @@ export const sendChallengeBodySchema = z
     tipoCarrera: z.enum(['CUARTO_MILLA', 'VUELTAS', 'DERRAPE'], {
       message: 'tipoCarrera debe ser CUARTO_MILLA, VUELTAS o DERRAPE',
     }),
+    pistaId: z.string().uuid('pistaId debe ser un UUID válido').nullable().optional(),
     notas: z.string().max(500, 'Las notas no pueden exceder 500 caracteres').nullable().optional(),
     fechaAcordada: z
       .string()

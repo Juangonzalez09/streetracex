@@ -7,6 +7,8 @@ import profileRoutes from './infrastructure/http/routes/profile.routes';
 import vehicleRoutes from './infrastructure/http/routes/vehicle.routes';
 import matchmakingRoutes from './infrastructure/http/routes/matchmaking.routes';
 import challengeRoutes from './infrastructure/http/routes/challenge.routes';
+import trackRoutes from './infrastructure/http/routes/track.routes';
+import notificationRoutes from './infrastructure/http/routes/notification.routes';
 import { registerSwagger } from './infrastructure/http/docs/swagger';
 
 // 1. Inicialización de la aplicación
@@ -28,6 +30,8 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/matchmaking', matchmakingRoutes);
 app.use('/api/challenges', challengeRoutes);
+app.use('/api/tracks', trackRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // 4. Arranque del servidor
 app.listen(PORT, () => {

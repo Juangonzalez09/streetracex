@@ -18,6 +18,7 @@ export interface ChallengeItem {
   ganadorId: string | null;
   reporteRetadorId: string | null;
   reporteRetadoId: string | null;
+  pistaId: string | null;
   notas: string | null;
   fechaAcordada: Date | null;
   createdAt: Date;
@@ -32,6 +33,7 @@ export interface SendChallengeData {
   retadoId: string;
   tipoCarrera: TipoCarrera;
   vehiculoRetadorId: string;
+  pistaId?: string | null;
   notas?: string | null;
   fechaAcordada?: Date | null;
 }

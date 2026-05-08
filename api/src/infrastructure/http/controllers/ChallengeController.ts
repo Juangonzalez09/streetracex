@@ -26,11 +26,12 @@ export class ChallengeController {
     if (!userId) return res.status(401).json({ success: false, message: 'No autenticado' });
 
     try {
-      const { retadoId, tipoCarrera, notas, fechaAcordada } = req.body;
+      const { retadoId, tipoCarrera, pistaId, notas, fechaAcordada } = req.body;
       const challenge = await this.sendChallengeUseCase.execute({
         retadorId: userId,
         retadoId,
         tipoCarrera,
+        pistaId,
         notas,
         fechaAcordada,
       });
@@ -45,6 +46,9 @@ export class ChallengeController {
         'Solo puedes retar a pilotos del mismo rango': 422,
         'El piloto retado no tiene un vehículo activo': 422,
         'El piloto retado no tiene un vehículo activo del mismo tipo': 422,
+        'La pista seleccionada no existe': 404,
+        'La pista seleccionada no está activa': 422,
+        'La pista no corresponde al tipo de carrera seleccionado': 422,
         'Ya existe un reto activo entre estos pilotos': 409,
       };
       const status = clientErrors[error.message];

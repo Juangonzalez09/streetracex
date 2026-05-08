@@ -33,6 +33,17 @@ import { SetActiveVehicleUseCase } from '../application/vehicle/SetActiveVehicle
 import { PrismaMatchmakingRepository } from './matchmaking/PrismaMatchmakingRepository';
 import { ListMatchmakingPilotsUseCase } from '../application/matchmaking/ListMatchmakingPilotsUseCase';
 import { MatchmakingController } from './http/controllers/MatchmakingController';
+import { ListNotificationsUseCase } from '../application/notification/ListNotificationsUseCase';
+import { MarkNotificationReadUseCase } from '../application/notification/MarkNotificationReadUseCase';
+import { MarkAllNotificationsReadUseCase } from '../application/notification/MarkAllNotificationsReadUseCase';
+import { NotificationController } from './http/controllers/NotificationController';
+import { PrismaTrackRepository } from './track/PrismaTrackRepository';
+import { CreateTrackUseCase } from '../application/track/CreateTrackUseCase';
+import { DeactivateTrackUseCase } from '../application/track/DeactivateTrackUseCase';
+import { GetTrackUseCase } from '../application/track/GetTrackUseCase';
+import { ListTracksUseCase } from '../application/track/ListTracksUseCase';
+import { UpdateTrackUseCase } from '../application/track/UpdateTrackUseCase';
+import { TrackController } from './http/controllers/TrackController';
 
 const prisma = new PrismaClient();
 
@@ -84,7 +95,32 @@ export const vehicleController = new VehicleController(
 
 export const matchmakingController = new MatchmakingController(listMatchmakingPilotsUseCase);
 
-const sendChallengeUseCase = new SendChallengeUseCase(challengeRepository, userRepository, vehicleRepository, notificationRepository);
+const listNotificationsUseCase = new ListNotificationsUseCase(notificationRepository);
+const markNotificationReadUseCase = new MarkNotificationReadUseCase(notificationRepository);
+const markAllNotificationsReadUseCase = new MarkAllNotificationsReadUseCase(notificationRepository);
+
+export const notificationController = new NotificationController(
+  listNotificationsUseCase,
+  markNotificationReadUseCase,
+  markAllNotificationsReadUseCase,
+);
+
+const trackRepository = new PrismaTrackRepository(prisma);
+const listTracksUseCase = new ListTracksUseCase(trackRepository);
+const getTrackUseCase = new GetTrackUseCase(trackRepository);
+const createTrackUseCase = new CreateTrackUseCase(trackRepository);
+const updateTrackUseCase = new UpdateTrackUseCase(trackRepository);
+const deactivateTrackUseCase = new DeactivateTrackUseCase(trackRepository);
+
+export const trackController = new TrackController(
+  listTracksUseCase,
+  getTrackUseCase,
+  createTrackUseCase,
+  updateTrackUseCase,
+  deactivateTrackUseCase,
+);
+
+const sendChallengeUseCase = new SendChallengeUseCase(challengeRepository, userRepository, vehicleRepository, notificationRepository, trackRepository);
 const acceptChallengeUseCase = new AcceptChallengeUseCase(challengeRepository, vehicleRepository, notificationRepository);
 const rejectChallengeUseCase = new RejectChallengeUseCase(challengeRepository, notificationRepository);
 const cancelChallengeUseCase = new CancelChallengeUseCase(challengeRepository);

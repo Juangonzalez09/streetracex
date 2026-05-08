@@ -57,6 +57,13 @@ export const challengeSchemas = {
         description: 'UUID del ganador declarado por el retado',
         example: null,
       },
+      pistaId: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'UUID de la pista seleccionada por el retador (opcional)',
+        example: 'b1c2d3e4-f5a6-7890-bcde-f01234567890',
+      },
       notas: { type: 'string', nullable: true, example: 'Este fin de semana en la vía principal' },
       fechaAcordada: { type: 'string', format: 'date-time', nullable: true, example: '2026-06-01T18:00:00.000Z' },
       createdAt: { type: 'string', format: 'date-time', example: '2026-05-07T20:00:00.000Z' },
@@ -106,6 +113,13 @@ export const challengeSchemas = {
         type: 'string',
         enum: ['CUARTO_MILLA', 'VUELTAS', 'DERRAPE'],
         example: 'CUARTO_MILLA',
+      },
+      pistaId: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'UUID de la pista (opcional). Debe estar activa y su tipoCarrera debe coincidir con el reto.',
+        example: 'b1c2d3e4-f5a6-7890-bcde-f01234567890',
       },
       notas: {
         type: 'string',

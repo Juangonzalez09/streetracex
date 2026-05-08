@@ -223,7 +223,7 @@ Todos desde `api/`:
 ### Challenges — `/api/challenges`
 | Método | Endpoint | Auth | Descripción |
 |---|---|---|---|
-| POST | `/` | Piloto | Enviar reto a otro piloto |
+| POST | `/` | Piloto | Enviar reto (con `pistaId` opcional) |
 | GET | `/` | Piloto | Listar mis retos (filtros: tipo, estado) |
 | PATCH | `/:id/accept` | Piloto (retado) | Aceptar reto recibido |
 | PATCH | `/:id/reject` | Piloto (retado) | Rechazar reto recibido |
@@ -231,6 +231,22 @@ Todos desde `api/`:
 | PATCH | `/:id/start` | Piloto (retador) | Iniciar reto → EN_CURSO |
 | PATCH | `/:id/result` | Piloto | Reportar ganador (doble confirmación) |
 | PATCH | `/:id/admin-resolve` | Admin | Resolver disputa y forzar resultado |
+
+### Tracks — `/api/tracks`
+| Método | Endpoint | Auth | Descripción |
+|---|---|---|---|
+| GET | `/` | Piloto | Listar pistas activas (filtro: tipoCarrera, soloActivas) |
+| GET | `/:trackId` | Piloto | Ver detalle de una pista |
+| POST | `/` | Admin | Crear nueva pista |
+| PATCH | `/:trackId` | Admin | Actualizar datos de una pista |
+| PATCH | `/:trackId/deactivate` | Admin | Desactivar pista |
+
+### Notifications — `/api/notifications`
+| Método | Endpoint | Auth | Descripción |
+|---|---|---|---|
+| GET | `/` | Piloto | Listar mis notificaciones (filtro: soloNoLeidas) |
+| PATCH | `/read-all` | Piloto | Marcar todas como leídas |
+| PATCH | `/:id/read` | Piloto | Marcar una notificación como leída |
 
 ---
 
@@ -244,9 +260,9 @@ Todos desde `api/`:
 - [x] Matchmaking por rango y tipo de vehículo
 - [x] Sistema de retos completo con flujo de estados
 - [x] Actualización de estadísticas y ascenso de rango
-- [x] Notificaciones internas (creadas por el flujo de retos)
+- [x] Pistas de carrera con gestión por administrador
+- [x] Notificaciones internas + endpoints HTTP
 - [x] Documentación Swagger / OpenAPI modular
-- [ ] Endpoints de notificaciones (listar, marcar leídas)
 - [ ] WebSockets con Socket.io (eventos en tiempo real)
 - [ ] Frontend web (React / Next.js)
 - [ ] Tests unitarios e integración

@@ -11,7 +11,6 @@
 ```bash
 # Desde api/
 npm install
-npx prisma migrate dev --name add_result_reports_to_challenges
 npm run prisma:generate
 npm run build
 npm start
@@ -27,16 +26,18 @@ JWT_SECRET=mi_secreto_super_seguro
 
 ## Variables a guardar durante las pruebas
 
-| Variable       | Cómo obtenerla                          |
-|----------------|-----------------------------------------|
-| `tokenA`       | Login Piloto A → `data.accessToken`     |
-| `tokenB`       | Login Piloto B → `data.accessToken`     |
-| `tokenAdmin`   | Login Admin → `data.accessToken`        |
-| `userIdA`      | Register Piloto A → `data.id`           |
-| `userIdB`      | Register Piloto B → `data.id`           |
-| `vehicleIdA`   | Crear vehículo Piloto A → `data.id`     |
-| `vehicleIdB`   | Crear vehículo Piloto B → `data.id`     |
-| `challengeId`  | Enviar reto → `data.id`                 |
+| Variable         | Cómo obtenerla                          |
+|------------------|-----------------------------------------|
+| `tokenA`         | Login Piloto A → `data.accessToken`     |
+| `tokenB`         | Login Piloto B → `data.accessToken`     |
+| `tokenAdmin`     | Login Admin → `data.accessToken`        |
+| `userIdA`        | Register Piloto A → `data.id`           |
+| `userIdB`        | Register Piloto B → `data.id`           |
+| `vehicleIdA`     | Crear vehículo Piloto A → `data.id`     |
+| `vehicleIdB`     | Crear vehículo Piloto B → `data.id`     |
+| `challengeId`    | Enviar reto → `data.id`                 |
+| `trackId`        | Crear pista → `data.id`                 |
+| `notificationId` | Listar notificaciones → `data[0].id`    |
 
 ---
 
@@ -103,8 +104,7 @@ Content-Type: application/json
   "password": "StreetRace2026!"
 }
 ```
-Esperado: `200` — guarda `data.data.accessToken` como `tokenA`.  
-La cookie `refreshToken` se guarda automáticamente.
+Esperado: `200` — guarda `data.data.accessToken` como `tokenA`.
 
 ---
 
@@ -123,25 +123,21 @@ Esperado: `200` — guarda `data.data.accessToken` como `tokenB`.
 
 ---
 
-### 1.5 Refresh de sesión (Piloto A)
+### 1.5 Refresh de sesión
 ```
 POST /api/auth/refresh
 ```
 Sin body si la cookie `refreshToken` está activa.  
-Alternativa body:
-```json
-{ "refreshToken": "{{refreshToken}}" }
-```
 Esperado: `200` — nuevo `accessToken`.
 
 ---
 
-### 1.6 Logout (Piloto A)
+### 1.6 Logout
 ```
 POST /api/auth/logout
 ```
 Sin body. Requiere cookie `refreshToken`.  
-Esperado: `200` — cookie limpiada. Vuelve a hacer login si necesitas el token.
+Esperado: `200` — cookie limpiada.
 
 ---
 
@@ -169,22 +165,22 @@ Content-Type: application/json
   "zonaEstado": "Antioquia"
 }
 ```
-Esperado: `200` — perfil actualizado con nuevo username y zona.
+Esperado: `200` — perfil actualizado.
 
 ---
 
-### 2.3 Ver perfil público de Piloto B (desde Piloto A)
+### 2.3 Ver perfil público de Piloto B
 ```
 GET /api/profile/{{userIdB}}
 Authorization: Bearer {{tokenA}}
 ```
-Esperado: `200` — perfil público sin email ni datos sensibles.
+Esperado: `200` — perfil público sin datos sensibles.
 
 ---
 
 ## MÓDULO 3 — Vehicles
 
-> Ambos pilotos necesitan un vehículo activo **del mismo tipo** para poder retarse.
+> Ambos pilotos necesitan un vehículo activo **del mismo tipo** para retarse.
 
 ### 3.1 Crear vehículo Piloto A
 ```
@@ -246,35 +242,16 @@ Esperado: `200` — `data.activo: true`.
 
 ---
 
-### 3.5 Listar mis vehículos (Piloto A)
+### 3.5 Listar mis vehículos
 ```
 GET /api/vehicles
 Authorization: Bearer {{tokenA}}
 ```
-Esperado: `200` — lista con el vehículo activo primero.
-
----
-
-### 3.6 Editar vehículo (Piloto A)
-```
-PATCH /api/vehicles/{{vehicleIdA}}
-Authorization: Bearer {{tokenA}}
-Content-Type: application/json
-```
-```json
-{
-  "color": "Gris titanio",
-  "modificaciones": "Turbo SR20DET + suspensión coilover"
-}
-```
-Esperado: `200` — vehículo actualizado.
+Esperado: `200` — lista con el vehículo activo.
 
 ---
 
 ## MÓDULO 4 — Matchmaking
-
-> Requiere al menos dos pilotos con el **mismo rango** y **mismo tipo de vehículo activo**.  
-> Por defecto ambos están en rango `D` y ambos tienen `AUTO` activo — debe funcionar.
 
 ### 4.1 Buscar pilotos (Piloto A ve a Piloto B)
 ```
@@ -285,189 +262,12 @@ Esperado: `200` — Piloto B aparece en `data.pilots`.
 
 ---
 
-### 4.2 Con filtros de zona
-```
-GET /api/matchmaking?page=1&limit=10&zonaCiudad=Bogota
-Authorization: Bearer {{tokenA}}
-```
-Esperado: `200` — resultado filtrado por ciudad.
+## MÓDULO 5 — Tracks (Pistas)
 
----
+> Requiere usuario con `rol: ADMINISTRADOR`.  
+> Crea uno en Prisma Studio: `npx prisma studio` → tabla `users` → cambia `rol` a `ADMINISTRADOR`.
 
-## MÓDULO 5 — Challenges
-
-> El flujo completo requiere Piloto A y Piloto B con:
-> - Mismo rango (`D`)
-> - Mismo tipo de vehículo activo (`AUTO`)
-> - Sin reto activo entre ellos
-
----
-
-### FLUJO A — Reto normal (send → accept → start → resultado por consenso)
-
-#### 5.1 Piloto A envía reto a Piloto B
-```
-POST /api/challenges
-Authorization: Bearer {{tokenA}}
-Content-Type: application/json
-```
-```json
-{
-  "retadoId": "{{userIdB}}",
-  "tipoCarrera": "CUARTO_MILLA",
-  "notas": "Este fin de semana en la vía principal",
-  "fechaAcordada": "2026-06-01T18:00:00.000Z"
-}
-```
-Esperado: `201` — guarda `data.id` como `challengeId`.  
-Piloto B recibe notificación `RETO_RECIBIDO`.
-
----
-
-#### 5.2 Ver mis retos (Piloto A — enviados)
-```
-GET /api/challenges?tipo=enviados
-Authorization: Bearer {{tokenA}}
-```
-Esperado: `200` — lista con el reto en estado `PENDIENTE`.
-
----
-
-#### 5.3 Ver mis retos (Piloto B — recibidos)
-```
-GET /api/challenges?tipo=recibidos
-Authorization: Bearer {{tokenB}}
-```
-Esperado: `200` — lista con el reto en estado `PENDIENTE`.
-
----
-
-#### 5.4 Piloto B acepta el reto
-```
-PATCH /api/challenges/{{challengeId}}/accept
-Authorization: Bearer {{tokenB}}
-```
-Esperado: `200` — reto en estado `ACEPTADO`.  
-Piloto A recibe notificación `RETO_ACEPTADO`.
-
----
-
-#### 5.5 Piloto A inicia el reto
-```
-PATCH /api/challenges/{{challengeId}}/start
-Authorization: Bearer {{tokenA}}
-```
-Esperado: `200` — reto en estado `EN_CURSO`.
-
----
-
-#### 5.6 Piloto A reporta resultado (dice que ganó A)
-```
-PATCH /api/challenges/{{challengeId}}/result
-Authorization: Bearer {{tokenA}}
-Content-Type: application/json
-```
-```json
-{
-  "ganadorId": "{{userIdA}}"
-}
-```
-Esperado: `200` — mensaje `"Resultado reportado. Esperando confirmación del otro piloto"`.  
-Reto sigue en `EN_CURSO` con `reporteRetadorId` seteado.
-
----
-
-#### 5.7 Piloto B confirma resultado (también dice que ganó A)
-```
-PATCH /api/challenges/{{challengeId}}/result
-Authorization: Bearer {{tokenB}}
-Content-Type: application/json
-```
-```json
-{
-  "ganadorId": "{{userIdA}}"
-}
-```
-Esperado: `200` — mensaje `"Resultado confirmado"` o `"Resultado confirmado. ¡El ganador subió de rango!"`.  
-- Reto pasa a `COMPLETADO`
-- Piloto A: `victorias: 1`, `retosConsecutivos: 1`
-- Piloto B: `derrotas: 1`, `retosConsecutivos: 0`
-- Ambos reciben notificación `RESULTADO`
-
----
-
-#### 5.8 Verificar estadísticas actualizadas (Piloto A)
-```
-GET /api/profile/me
-Authorization: Bearer {{tokenA}}
-```
-Esperado: `victorias: 1`, `retosConsecutivos: 1`.
-
----
-
-### FLUJO B — Reto rechazado
-
-#### 5.9 Piloto A envía nuevo reto a Piloto B
-```
-POST /api/challenges
-Authorization: Bearer {{tokenA}}
-Content-Type: application/json
-```
-```json
-{
-  "retadoId": "{{userIdB}}",
-  "tipoCarrera": "VUELTAS",
-  "notas": "Circuito norte"
-}
-```
-Guarda el nuevo `challengeId`.
-
----
-
-#### 5.10 Piloto B rechaza el reto
-```
-PATCH /api/challenges/{{challengeId}}/reject
-Authorization: Bearer {{tokenB}}
-```
-Esperado: `200` — reto en estado `RECHAZADO`.  
-Piloto A recibe notificación `RETO_RECHAZADO`.
-
----
-
-### FLUJO C — Reto cancelado
-
-#### 5.11 Piloto A envía otro reto
-```
-POST /api/challenges
-Authorization: Bearer {{tokenA}}
-Content-Type: application/json
-```
-```json
-{
-  "retadoId": "{{userIdB}}",
-  "tipoCarrera": "DERRAPE"
-}
-```
-Guarda el nuevo `challengeId`.
-
----
-
-#### 5.12 Piloto A cancela su propio reto (PENDIENTE)
-```
-PATCH /api/challenges/{{challengeId}}/cancel
-Authorization: Bearer {{tokenA}}
-```
-Esperado: `200` — reto en estado `CANCELADO`.
-
----
-
-### FLUJO D — Resolución por Admin (disputa)
-
-> Para este flujo necesitas un usuario con `rol: ADMINISTRADOR`.  
-> Crea uno directamente en BD o con Prisma Studio:  
-> `npx prisma studio` → tabla `users` → cambia `rol` a `ADMINISTRADOR`.
-
-#### 5.13 Login Admin
+### 5.1 Login Admin
 ```
 POST /api/auth/login
 Content-Type: application/json
@@ -482,147 +282,347 @@ Guarda `data.data.accessToken` como `tokenAdmin`.
 
 ---
 
-#### 5.14 Crear reto que llegue a EN_CURSO con disputa
-Repite pasos 5.1 → 5.5. Luego ambos pilotos reportan ganadores distintos:
+### 5.2 Crear pista (Admin)
+```
+POST /api/tracks
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+```
+```json
+{
+  "nombre": "Recta del Parque Norte",
+  "tipoCarrera": "CUARTO_MILLA",
+  "descripcion": "Tramo recto de 400m en el parque industrial norte",
+  "dificultad": "Media",
+  "coordenadas": "4.710989,-74.072092"
+}
+```
+Esperado: `201` — guarda `data.id` como `trackId`.
 
-Piloto A dice que ganó A:
+---
+
+### 5.3 Crear pista de derrape
+```
+POST /api/tracks
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+```
+```json
+{
+  "nombre": "Zona de Derrape El Codazo",
+  "tipoCarrera": "DERRAPE",
+  "dificultad": "Alta"
+}
+```
+Esperado: `201`.
+
+---
+
+### 5.4 Listar pistas (Piloto A)
+```
+GET /api/tracks
+Authorization: Bearer {{tokenA}}
+```
+Esperado: `200` — lista de pistas activas.
+
+---
+
+### 5.5 Filtrar pistas por tipo
+```
+GET /api/tracks?tipoCarrera=CUARTO_MILLA
+Authorization: Bearer {{tokenA}}
+```
+Esperado: `200` — solo pistas de cuarto de milla.
+
+---
+
+### 5.6 Ver detalle de pista
+```
+GET /api/tracks/{{trackId}}
+Authorization: Bearer {{tokenA}}
+```
+Esperado: `200` — detalle de la pista.
+
+---
+
+### 5.7 Actualizar pista (Admin)
+```
+PATCH /api/tracks/{{trackId}}
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+```
+```json
+{
+  "dificultad": "Alta",
+  "coordenadas": "4.711000,-74.072100"
+}
+```
+Esperado: `200` — pista actualizada.
+
+---
+
+### 5.8 Desactivar pista (Admin)
+```
+PATCH /api/tracks/{{trackId}}/deactivate
+Authorization: Bearer {{tokenAdmin}}
+```
+Esperado: `200` — `data.activo: false`.
+
+---
+
+### 5.9 Verificar que desaparece del listado de pilotos
+```
+GET /api/tracks
+Authorization: Bearer {{tokenA}}
+```
+Esperado: la pista desactivada ya no aparece.
+
+---
+
+### 5.10 Ver todas incluyendo inactivas (Admin)
+```
+GET /api/tracks?soloActivas=false
+Authorization: Bearer {{tokenAdmin}}
+```
+Esperado: aparece la pista desactivada con `activo: false`.
+
+---
+
+### Errores esperados — Tracks
+
+| Acción | HTTP | Mensaje |
+|---|---|---|
+| Piloto crea pista | 403 | `Acceso denegado` |
+| trackId inválido | 422 | `trackId debe ser un UUID válido` |
+| Pista no existe | 404 | `Pista no encontrada` |
+| Desactivar ya inactiva | 409 | `La pista ya está desactivada` |
+
+---
+
+## MÓDULO 6 — Challenges (con pista opcional)
+
+> Reactiva la pista del paso 5.2 si la desactivaste, o crea una nueva.
+
+### FLUJO A — Reto con pista seleccionada
+
+#### 6.1 Piloto A envía reto CON pista
+```
+POST /api/challenges
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+```
+```json
+{
+  "retadoId": "{{userIdB}}",
+  "tipoCarrera": "CUARTO_MILLA",
+  "pistaId": "{{trackId}}",
+  "notas": "Nos vemos en la recta norte este sábado",
+  "fechaAcordada": "2026-06-01T18:00:00.000Z"
+}
+```
+Esperado: `201` — `data.pistaId` tiene el UUID de la pista. Guarda `data.id` como `challengeId`.
+
+---
+
+#### 6.2 Piloto B acepta
+```
+PATCH /api/challenges/{{challengeId}}/accept
+Authorization: Bearer {{tokenB}}
+```
+Esperado: `200` — estado `ACEPTADO`, `vehiculoRetadoId` asignado.
+
+---
+
+#### 6.3 Piloto A inicia
+```
+PATCH /api/challenges/{{challengeId}}/start
+Authorization: Bearer {{tokenA}}
+```
+Esperado: `200` — estado `EN_CURSO`.
+
+---
+
+#### 6.4 Piloto A reporta (dice que ganó A)
 ```
 PATCH /api/challenges/{{challengeId}}/result
 Authorization: Bearer {{tokenA}}
 Content-Type: application/json
+```
+```json
 { "ganadorId": "{{userIdA}}" }
 ```
+Esperado: `200` — `"Resultado reportado. Esperando confirmación del otro piloto"`.
 
-Piloto B dice que ganó B:
+---
+
+#### 6.5 Piloto B confirma (también dice que ganó A)
 ```
 PATCH /api/challenges/{{challengeId}}/result
 Authorization: Bearer {{tokenB}}
 Content-Type: application/json
-{ "ganadorId": "{{userIdB}}" }
 ```
-Esperado: el reto sigue en `EN_CURSO` (disputa activa, no hay acuerdo).
+```json
+{ "ganadorId": "{{userIdA}}" }
+```
+Esperado: `200` — `"Resultado confirmado"`. Reto `COMPLETADO`. Estadísticas actualizadas.
 
 ---
 
-#### 5.15 Admin resuelve la disputa
+### FLUJO B — Reto sin pista (campo omitido)
+```
+POST /api/challenges
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+```
+```json
+{
+  "retadoId": "{{userIdB}}",
+  "tipoCarrera": "VUELTAS"
+}
+```
+Esperado: `201` — `data.pistaId: null`.
+
+---
+
+### FLUJO C — Reto rechazado
+```
+POST /api/challenges → PATCH /:id/reject (Piloto B)
+```
+Esperado: estado `RECHAZADO`. Piloto A recibe notificación `RETO_RECHAZADO`.
+
+---
+
+### FLUJO D — Resolución por Admin (disputa)
+
+Repite 6.1 → 6.3. Luego reportan ganadores distintos:
+
+Piloto A dice que ganó A:
+```json
+{ "ganadorId": "{{userIdA}}" }
+```
+Piloto B dice que ganó B:
+```json
+{ "ganadorId": "{{userIdB}}" }
+```
+El reto se queda en `EN_CURSO`.
+
+Admin resuelve:
 ```
 PATCH /api/challenges/{{challengeId}}/admin-resolve
 Authorization: Bearer {{tokenAdmin}}
 Content-Type: application/json
 ```
 ```json
-{
-  "ganadorId": "{{userIdA}}"
-}
+{ "ganadorId": "{{userIdA}}" }
 ```
-Esperado: `200` — reto `COMPLETADO`, stats actualizadas, notificaciones enviadas.
+Esperado: `200` — reto `COMPLETADO`, stats actualizadas.
 
 ---
 
 ### FLUJO E — Ascenso de rango
 
-> El piloto necesita **2 victorias consecutivas** en rango `D` para ascender a `C`.  
-> Si Piloto A ya tiene 1 victoria (paso 5.7), gana otro reto y sube.
+El piloto necesita **2 victorias consecutivas** para ascender (D→C→B→A→S).  
+Repite el flujo A dos veces con Piloto A ganando ambas.  
+En la segunda victoria: mensaje `"Resultado confirmado. ¡El ganador subió de rango!"`.
 
-#### 5.16 Segundo reto completo (Piloto A vs Piloto B)
-Repite pasos 5.1 → 5.7 con un nuevo reto.  
-En el paso 5.7 (Piloto B confirma que ganó A):
-
-Esperado: `200` — mensaje `"Resultado confirmado. ¡El ganador subió de rango!"`.  
-- Piloto A: `rango: "C"`, `retosConsecutivos: 0` (reset tras ascenso)
-- Piloto A recibe notificación `RANGO_SUBIDO`
-
----
-
-#### 5.17 Verificar rango actualizado
 ```
 GET /api/profile/me
 Authorization: Bearer {{tokenA}}
 ```
-Esperado: `rango: "C"`.
+Esperado: `rango: "C"`, `retosConsecutivos: 0`.
 
 ---
 
-## MÓDULO 6 — Casos de error esperados
+### Errores esperados — Challenges
 
-### 6.1 Retarse a sí mismo
-```
-POST /api/challenges
-Authorization: Bearer {{tokenA}}
-{ "retadoId": "{{userIdA}}", "tipoCarrera": "CUARTO_MILLA" }
-```
-Esperado: `400` — `"No puedes retarte a ti mismo"`.
-
----
-
-### 6.2 Retar sin vehículo activo
-Desactiva/elimina el vehículo de Piloto A y luego intenta retar.  
-Esperado: `422` — `"Necesitas un vehículo activo para enviar un reto"`.
+| Acción | HTTP | Mensaje |
+|---|---|---|
+| Retarse a sí mismo | 400 | `No puedes retarte a ti mismo` |
+| Sin vehículo activo | 422 | `Necesitas un vehículo activo para enviar un reto` |
+| Distinto rango | 422 | `Solo puedes retar a pilotos del mismo rango` |
+| Reto duplicado activo | 409 | `Ya existe un reto activo entre estos pilotos` |
+| pistaId inactiva | 422 | `La pista seleccionada no está activa` |
+| pistaId tipo distinto | 422 | `La pista no corresponde al tipo de carrera seleccionado` |
+| pistaId inexistente | 404 | `La pista seleccionada no existe` |
+| Admin-resolve sin ser admin | 403 | `Acceso denegado` |
 
 ---
 
-### 6.3 Retar a piloto de otro rango
-Requiere dos pilotos en rangos distintos (ej. uno en `D`, otro en `C`).  
-Esperado: `422` — `"Solo puedes retar a pilotos del mismo rango"`.
+## MÓDULO 7 — Notifications
+
+### 7.1 Listar todas mis notificaciones (Piloto B)
+```
+GET /api/notifications
+Authorization: Bearer {{tokenB}}
+```
+Esperado: `200` — lista de notificaciones (`RETO_RECIBIDO`, `RETO_ACEPTADO`, etc.). Guarda `data[0].id` como `notificationId`.
 
 ---
 
-### 6.4 Reto duplicado activo
-Intenta enviar dos retos al mismo piloto mientras el primero sigue PENDIENTE.  
-Esperado: `409` — `"Ya existe un reto activo entre estos pilotos"`.
+### 7.2 Listar solo no leídas
+```
+GET /api/notifications?soloNoLeidas=true
+Authorization: Bearer {{tokenB}}
+```
+Esperado: `200` — solo notificaciones con `leida: false`.
 
 ---
 
-### 6.5 Piloto A intenta aceptar su propio reto
+### 7.3 Marcar una notificación como leída
 ```
-PATCH /api/challenges/{{challengeId}}/accept
-Authorization: Bearer {{tokenA}}
+PATCH /api/notifications/{{notificationId}}/read
+Authorization: Bearer {{tokenB}}
 ```
-Esperado: `403` — `"Solo el retado puede aceptar el reto"`.
+Esperado: `200` — `data.leida: true`.
 
 ---
 
-### 6.6 Admin-resolve sin ser admin
+### 7.4 Intentar marcar la misma otra vez
 ```
-PATCH /api/challenges/{{challengeId}}/admin-resolve
-Authorization: Bearer {{tokenA}}
-{ "ganadorId": "{{userIdA}}" }
+PATCH /api/notifications/{{notificationId}}/read
+Authorization: Bearer {{tokenB}}
 ```
-Esperado: `403` — `"Acceso denegado"`.
+Esperado: `409` — `"La notificación ya está marcada como leída"`.
 
 ---
 
-### 6.7 Token inválido
+### 7.5 Marcar todas como leídas
 ```
-GET /api/profile/me
-Authorization: Bearer token_falso
+PATCH /api/notifications/read-all
+Authorization: Bearer {{tokenB}}
 ```
-Esperado: `401`.
+Esperado: `200` — `"Todas las notificaciones marcadas como leídas"`.
 
 ---
 
-## Filtros disponibles en GET /api/challenges
-
-| Query param | Valores posibles                                               |
-|-------------|----------------------------------------------------------------|
-| `tipo`      | `enviados`, `recibidos`, `todos` (default)                     |
-| `estado`    | `PENDIENTE`, `ACEPTADO`, `RECHAZADO`, `EN_CURSO`, `COMPLETADO`, `CANCELADO` |
-
-Ejemplo:
+### 7.6 Verificar que no quedan no leídas
 ```
-GET /api/challenges?tipo=enviados&estado=COMPLETADO
-Authorization: Bearer {{tokenA}}
+GET /api/notifications?soloNoLeidas=true
+Authorization: Bearer {{tokenB}}
 ```
+Esperado: `200` — `data: []`.
+
+---
+
+### Errores esperados — Notifications
+
+| Acción | HTTP | Mensaje |
+|---|---|---|
+| Notificación no existe | 404 | `Notificación no encontrada` |
+| Notificación de otro usuario | 403 | `No tienes acceso a esta notificación` |
+| Ya estaba leída | 409 | `La notificación ya está marcada como leída` |
+| notificationId inválido | 422 | `notificationId debe ser un UUID válido` |
 
 ---
 
 ## Estado de módulos
 
-| Módulo      | Estado |
-|-------------|--------|
-| Auth        | ✅     |
-| Profile     | ✅     |
-| Vehicles    | ✅     |
-| Matchmaking | ✅     |
-| Challenges  | ✅     |
-| Notifications (endpoints) | Pendiente |
+| Módulo        | Estado |
+|---------------|--------|
+| Auth          | ✅     |
+| Profile       | ✅     |
+| Vehicles      | ✅     |
+| Matchmaking   | ✅     |
+| Tracks        | ✅     |
+| Challenges    | ✅     |
+| Notifications | ✅     |

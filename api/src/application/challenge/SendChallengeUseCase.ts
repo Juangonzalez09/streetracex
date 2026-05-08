@@ -2,11 +2,13 @@ import { ChallengeItem, ChallengeRepository, TipoCarrera } from '../../domain/ch
 import { UserRepository } from '../../domain/auth/UserRepository';
 import { VehicleRepository } from '../../domain/vehicle/VehicleRepository';
 import { NotificationRepository } from '../../domain/notification/NotificationRepository';
+import { TrackRepository } from '../../domain/track/TrackRepository';
 
 export interface SendChallengeInput {
   retadorId: string;
   retadoId: string;
   tipoCarrera: TipoCarrera;
+  pistaId?: string | null;
   notas?: string | null;
   fechaAcordada?: Date | null;
 }
@@ -17,10 +19,11 @@ export class SendChallengeUseCase {
     private readonly userRepository: UserRepository,
     private readonly vehicleRepository: VehicleRepository,
     private readonly notificationRepository: NotificationRepository,
+    private readonly trackRepository: TrackRepository,
   ) {}
 
   async execute(input: SendChallengeInput): Promise<ChallengeItem> {
-    const { retadorId, retadoId, tipoCarrera, notas, fechaAcordada } = input;
+    const { retadorId, retadoId, tipoCarrera, pistaId, notas, fechaAcordada } = input;
 
     if (retadorId === retadoId) {
       throw new Error('No puedes retarte a ti mismo');
@@ -43,6 +46,13 @@ export class SendChallengeUseCase {
       throw new Error('El piloto retado no tiene un vehículo activo del mismo tipo');
     }
 
+    if (pistaId) {
+      const pista = await this.trackRepository.findById(pistaId);
+      if (!pista) throw new Error('La pista seleccionada no existe');
+      if (!pista.activo) throw new Error('La pista seleccionada no está activa');
+      if (pista.tipoCarrera !== tipoCarrera) throw new Error('La pista no corresponde al tipo de carrera seleccionado');
+    }
+
     const hayRetoActivo = await this.challengeRepository.hasActiveChallengeBetween(retadorId, retadoId);
     if (hayRetoActivo) throw new Error('Ya existe un reto activo entre estos pilotos');
 
@@ -51,6 +61,7 @@ export class SendChallengeUseCase {
       retadoId,
       tipoCarrera,
       vehiculoRetadorId: vehiculoRetador.id,
+      pistaId: pistaId ?? null,
       notas,
       fechaAcordada,
     });

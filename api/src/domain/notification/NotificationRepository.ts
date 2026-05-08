@@ -7,6 +7,16 @@ export type TipoNotificacion =
   | 'NUEVA_PISTA'
   | 'CAMBIO_CATEGORIA';
 
+export interface NotificationItem {
+  id: string;
+  userId: string;
+  tipo: TipoNotificacion;
+  mensaje: string;
+  leida: boolean;
+  referenciaId: string | null;
+  createdAt: Date;
+}
+
 export interface CreateNotificationInput {
   userId: string;
   tipo: TipoNotificacion;
@@ -16,4 +26,8 @@ export interface CreateNotificationInput {
 
 export interface NotificationRepository {
   create(input: CreateNotificationInput): Promise<void>;
+  findByUserId(userId: string, soloNoLeidas?: boolean): Promise<NotificationItem[]>;
+  findById(id: string): Promise<NotificationItem | null>;
+  markAsRead(id: string): Promise<NotificationItem>;
+  markAllAsRead(userId: string): Promise<void>;
 }
