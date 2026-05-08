@@ -1,5 +1,17 @@
 import { authPaths } from './paths/auth.paths';
+import { profilePaths } from './paths/profile.paths';
+import { vehiclePaths } from './paths/vehicle.paths';
+import { matchmakingPaths } from './paths/matchmaking.paths';
+import { challengePaths } from './paths/challenge.paths';
+import { trackPaths } from './paths/track.paths';
+import { notificationPaths } from './paths/notification.paths';
 import { authSchemas } from './schemas/auth.schemas';
+import { profileSchemas } from './schemas/profile.schemas';
+import { vehicleSchemas } from './schemas/vehicle.schemas';
+import { matchmakingSchemas } from './schemas/matchmaking.schemas';
+import { challengeSchemas } from './schemas/challenge.schemas';
+import { trackSchemas } from './schemas/track.schemas';
+import { notificationSchemas } from './schemas/notification.schemas';
 import { commonSchemas } from './schemas/common.schemas';
 
 export const openApiDocument = {
@@ -22,10 +34,13 @@ export const openApiDocument = {
   ],
   tags: [
     { name: 'Auth', description: 'Autenticacion y gestion de sesion' },
-    { name: 'Vehicles', description: 'Gestion de vehiculos (proximamente)' },
-    { name: 'Challenges', description: 'Retos y emparejamiento (proximamente)' },
+    { name: 'Profile', description: 'Perfil del piloto: datos propios y vista publica' },
+    { name: 'Vehicles', description: 'Gestion de vehiculos del piloto' },
+    { name: 'Matchmaking', description: 'Emparejamiento de pilotos por reglas de negocio' },
+    { name: 'Challenges', description: 'Retos entre pilotos: enviar, aceptar, iniciar, reportar resultado y resolucion de disputas' },
+    { name: 'Tracks', description: 'Pistas de carrera: listado y gestión por administrador' },
+    { name: 'Notifications', description: 'Notificaciones internas del piloto' },
     { name: 'Ranking', description: 'Sistema de rangos D-S (proximamente)' },
-    { name: 'Notifications', description: 'Eventos y alertas (proximamente)' },
   ],
   externalDocs: {
     description: 'Repositorio del proyecto',
@@ -33,9 +48,21 @@ export const openApiDocument = {
   },
   paths: {
     ...authPaths,
+    ...profilePaths,
+    ...vehiclePaths,
+    ...matchmakingPaths,
+    ...challengePaths,
+    ...trackPaths,
+    ...notificationPaths,
   },
   components: {
     securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Access token JWT obtenido en login o refresh',
+      },
       refreshTokenCookie: {
         type: 'apiKey',
         in: 'cookie',
@@ -46,6 +73,12 @@ export const openApiDocument = {
     schemas: {
       ...commonSchemas,
       ...authSchemas,
+      ...profileSchemas,
+      ...vehicleSchemas,
+      ...matchmakingSchemas,
+      ...challengeSchemas,
+      ...trackSchemas,
+      ...notificationSchemas,
     },
   },
 } as const;

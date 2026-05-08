@@ -25,6 +25,14 @@ export class PrismaVehicleRepository implements VehicleRepository {
     });
   }
 
+  async findActiveByUserId(userId: string): Promise<Vehicle | null> {
+    const row = await this.prisma.vehicle.findFirst({
+      where: { user_id: userId, activo: true },
+    });
+    if (!row) return null;
+    return this.toVehicle(row);
+  }
+
   async create(userId: string, input: CreateVehicleInput): Promise<Vehicle> {
     try {
       const row = await this.prisma.vehicle.create({
