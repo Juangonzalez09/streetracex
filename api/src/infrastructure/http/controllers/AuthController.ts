@@ -114,7 +114,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      path: '/api/auth',
+      path: '/api/v1/auth',
       expires: expiresAt,
     });
   }
@@ -124,7 +124,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      path: '/api/auth',
+      path: '/api/v1/auth',
     });
   }
 

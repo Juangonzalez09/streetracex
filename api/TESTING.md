@@ -485,19 +485,6 @@ Marca una notificación específica como leída.
 **Params:** `notificationId` = UUID de la notificación  
 **Body:** ninguno
 
-**Respuesta 200:**
-```json
-{
-  "success": true,
-  "message": "Notificación marcada como leída",
-  "data": {
-    "id": "n1n2n3n4-a5b6-7890-cdef-123456789abc",
-    "leida": true,
-    "...": "resto de campos"
-  }
-}
-```
-
 ---
 
 ## 8. Admin 👑
