@@ -1,5 +1,5 @@
 export const authPaths = {
-  '/api/auth/register': {
+  '/api/v1/auth/register': {
     post: {
       tags: ['Auth'],
       summary: 'Registra un nuevo usuario',
@@ -117,7 +117,7 @@ export const authPaths = {
       },
     },
   },
-  '/api/auth/login': {
+  '/api/v1/auth/login': {
     post: {
       tags: ['Auth'],
       summary: 'Inicia sesion y retorna access token',
@@ -263,7 +263,7 @@ export const authPaths = {
       },
     },
   },
-  '/api/auth/refresh': {
+  '/api/v1/auth/refresh': {
     post: {
       tags: ['Auth'],
       summary: 'Refresca la sesion con refresh token',
@@ -397,7 +397,7 @@ export const authPaths = {
       },
     },
   },
-  '/api/auth/logout': {
+  '/api/v1/auth/logout': {
     post: {
       tags: ['Auth'],
       summary: 'Cierra la sesion actual',
