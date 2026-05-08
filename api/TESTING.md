@@ -89,26 +89,6 @@ Cookie: refreshToken=<valor_de_la_cookie>
 
 **Body:** ninguno
 
-**Respuesta 200:**
-```json
-{
-  "success": true,
-  "message": "Sesión refrescada",
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...(nuevo)",
-    "tokenType": "Bearer",
-    "expiresIn": "15m",
-    "user": {
-      "id": "f4f0e722-8aa9-4c7b-833f-56e378f79ef9",
-      "username": "pilot_alpha",
-      "email": "pilot.alpha@sx.dev",
-      "rol": "PILOTO",
-      "rango": "D"
-    }
-  }
-}
-```
-
 ---
 # CERRAR SESION
 ### POST `/api/v1/auth/logout` 🔒
@@ -120,14 +100,6 @@ Authorization: Bearer {{accessToken}}
 ```
 
 **Body:** ninguno
-
-**Respuesta 200:**
-```json
-{
-  "success": true,
-  "message": "Sesión cerrada"
-}
-```
 
 ---
 
@@ -427,8 +399,7 @@ Detalle de una pista específica.
 **Body:** ninguno
 ---
 
-## 7. Notifications
-
+## 7. NOTIFICACIONES
 ### GET `/api/v1/notifications` 🔒
 Lista notificaciones del piloto autenticado, ordenadas por fecha descendente.
 
@@ -508,6 +479,15 @@ Marca una notificación específica como leída.
   "password": "StreetRace2026!"
 }
 ```
+
+# LISTAR DISPUTAS PENDIENTES DESDE ADMIN
+### GET `/api/v1/admin/challenges?soloDisputas=true` 👑
+Listas Disputas pendientes para el admin
+
+**Body:** ninguno
+
+----
+
 
 # RESOLVER UNA DISPUTA O CHALLENGE
 ### PATCH `/api/v1/admin/challenges/:challengeId/resolve` 👑
