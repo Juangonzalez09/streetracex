@@ -5,6 +5,7 @@ import { NotificationRepository } from '../../domain/notification/NotificationRe
 export interface ReportResultOutput {
   challenge: ChallengeItem;
   completado: boolean;
+  disputa: boolean;
   rangoSubidoGanador: boolean;
 }
 
@@ -42,7 +43,8 @@ export class ReportResultUseCase {
     const hayAcuerdo = ambosReportaron && updated.reporteRetadorId === updated.reporteRetadoId;
 
     if (!hayAcuerdo) {
-      return { challenge: updated, completado: false, rangoSubidoGanador: false };
+      const disputa = ambosReportaron && !hayAcuerdo;
+      return { challenge: updated, completado: false, disputa, rangoSubidoGanador: false };
     }
 
     const finalChallenge = await this.challengeRepository.completeChallenge(challengeId, ganadorId);
@@ -82,6 +84,6 @@ export class ReportResultUseCase {
       });
     }
 
-    return { challenge: finalChallenge, completado: true, rangoSubidoGanador: resultadoGanador.rangoSubido };
+    return { challenge: finalChallenge, completado: true, disputa: false, rangoSubidoGanador: resultadoGanador.rangoSubido };
   }
 }

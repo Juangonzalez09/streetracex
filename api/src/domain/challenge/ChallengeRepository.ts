@@ -43,10 +43,16 @@ export interface ChallengeFilters {
   estado?: EstadoReto;
 }
 
+export interface AdminChallengeFilters {
+  estado?: EstadoReto;
+  soloDisputas?: boolean;
+}
+
 export interface ChallengeRepository {
   create(data: SendChallengeData): Promise<ChallengeItem>;
   findById(id: string): Promise<ChallengeItem | null>;
   findMyChallenges(userId: string, filters: ChallengeFilters): Promise<ChallengeItem[]>;
+  findAllChallenges(filters: AdminChallengeFilters): Promise<ChallengeItem[]>;
   hasActiveChallengeBetween(retadorId: string, retadoId: string): Promise<boolean>;
   acceptChallenge(id: string, vehiculoRetadoId: string): Promise<ChallengeItem>;
   updateEstado(id: string, estado: EstadoReto): Promise<ChallengeItem>;
