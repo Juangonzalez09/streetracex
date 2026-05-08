@@ -177,6 +177,8 @@ model Challenge {
   vehiculo_retado_id  String?     @db.Uuid
   estado              EstadoReto  @default(PENDIENTE)
   ganador_id          String?     @db.Uuid
+  reporte_retador_id  String?     @db.Uuid
+  reporte_retado_id   String?     @db.Uuid
   pista_id            String?     @db.Uuid
   fecha_acordada      DateTime?   @db.Timestamptz(6)
   notas               String?     @db.Text

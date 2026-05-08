@@ -18,6 +18,15 @@ export const commonSchemas = {
       message: 'Credenciales invalidas',
     },
   },
+  ApiSuccess: {
+    type: 'object',
+    description: 'Respuesta de exito sin datos adicionales',
+    required: ['success', 'message'],
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: { type: 'string', example: 'Operacion completada' },
+    },
+  },
   LogoutResponse: {
     type: 'object',
     description: 'Respuesta de cierre de sesion',

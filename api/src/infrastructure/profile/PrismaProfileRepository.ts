@@ -4,6 +4,7 @@ import {
   MyProfile,
   ProfileRepository,
   PublicProfile,
+  RankUpdateResult,
   UpdateProfileInput,
   VehicleSummary,
 } from '../../domain/profile/ProfileRepository';
@@ -110,6 +111,48 @@ export class PrismaProfileRepository implements ProfileRepository {
       }
       throw error;
     }
+  }
+
+  async updateStatsAfterChallenge(userId: string, won: boolean): Promise<RankUpdateResult> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new Error('Usuario no encontrado');
+
+    const rangos = ['D', 'C', 'B', 'A', 'S'];
+    let nuevoRango: string = user.rango;
+    let rangoSubido = false;
+
+    if (won) {
+      const nuevosConsecutivos = user.retos_consecutivos + 1;
+      let consecutivosFinal = nuevosConsecutivos;
+
+      if (nuevosConsecutivos >= 2) {
+        const idx = rangos.indexOf(user.rango);
+        if (idx < rangos.length - 1) {
+          nuevoRango = rangos[idx + 1];
+          rangoSubido = true;
+          consecutivosFinal = 0;
+        }
+      }
+
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          victorias: { increment: 1 },
+          retos_consecutivos: consecutivosFinal,
+          rango: nuevoRango as 'D' | 'C' | 'B' | 'A' | 'S',
+        },
+      });
+    } else {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          derrotas: { increment: 1 },
+          retos_consecutivos: 0,
+        },
+      });
+    }
+
+    return { nuevoRango, rangoSubido };
   }
 
   private toMyProfile(row: {

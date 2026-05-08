@@ -6,6 +6,7 @@ import authRoutes from './infrastructure/http/routes/auth.routes';
 import profileRoutes from './infrastructure/http/routes/profile.routes';
 import vehicleRoutes from './infrastructure/http/routes/vehicle.routes';
 import matchmakingRoutes from './infrastructure/http/routes/matchmaking.routes';
+import challengeRoutes from './infrastructure/http/routes/challenge.routes';
 import { registerSwagger } from './infrastructure/http/docs/swagger';
 
 // 1. Inicialización de la aplicación
@@ -26,6 +27,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/matchmaking', matchmakingRoutes);
+app.use('/api/challenges', challengeRoutes);
 
 // 4. Arranque del servidor
 app.listen(PORT, () => {

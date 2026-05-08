@@ -6,14 +6,25 @@ import { DeactivateMyProfileUseCase } from '../application/profile/DeactivateMyP
 import { GetMyProfileUseCase } from '../application/profile/GetMyProfileUseCase';
 import { GetPublicProfileUseCase } from '../application/profile/GetPublicProfileUseCase';
 import { UpdateMyProfileUseCase } from '../application/profile/UpdateMyProfileUseCase';
+import { AcceptChallengeUseCase } from '../application/challenge/AcceptChallengeUseCase';
+import { AdminResolveUseCase } from '../application/challenge/AdminResolveUseCase';
+import { CancelChallengeUseCase } from '../application/challenge/CancelChallengeUseCase';
+import { GetMyChallengesUseCase } from '../application/challenge/GetMyChallengesUseCase';
+import { RejectChallengeUseCase } from '../application/challenge/RejectChallengeUseCase';
+import { ReportResultUseCase } from '../application/challenge/ReportResultUseCase';
+import { SendChallengeUseCase } from '../application/challenge/SendChallengeUseCase';
+import { StartChallengeUseCase } from '../application/challenge/StartChallengeUseCase';
 import { PrismaUserRepository } from './auth/PrismaUserRepository';
 import { PrismaRefreshTokenRepository } from './auth/PrismaRefreshTokenRepository';
 import { RegisterUserUseCase } from '../application/auth/RegisterUserUseCase';
 import { AuthController } from './http/controllers/AuthController';
+import { ChallengeController } from './http/controllers/ChallengeController';
 import { ProfileController } from './http/controllers/ProfileController';
 import { VehicleController } from './http/controllers/VehicleController';
 import { PrismaProfileRepository } from './profile/PrismaProfileRepository';
 import { PrismaVehicleRepository } from './vehicle/PrismaVehicleRepository';
+import { PrismaChallengeRepository } from './challenge/PrismaChallengeRepository';
+import { PrismaNotificationRepository } from './notification/PrismaNotificationRepository';
 import { CreateVehicleUseCase } from '../application/vehicle/CreateVehicleUseCase';
 import { ListMyVehiclesUseCase } from '../application/vehicle/ListMyVehiclesUseCase';
 import { UpdateMyVehicleUseCase } from '../application/vehicle/UpdateMyVehicleUseCase';
@@ -30,6 +41,8 @@ const refreshTokenRepository = new PrismaRefreshTokenRepository(prisma);
 const profileRepository = new PrismaProfileRepository(prisma);
 const vehicleRepository = new PrismaVehicleRepository(prisma);
 const matchmakingRepository = new PrismaMatchmakingRepository(prisma);
+const challengeRepository = new PrismaChallengeRepository(prisma);
+const notificationRepository = new PrismaNotificationRepository(prisma);
 const registerUserUseCase = new RegisterUserUseCase(userRepository);
 const loginUserUseCase = new LoginUserUseCase(userRepository, refreshTokenRepository);
 const refreshSessionUseCase = new RefreshSessionUseCase(userRepository, refreshTokenRepository);
@@ -70,3 +83,23 @@ export const vehicleController = new VehicleController(
 );
 
 export const matchmakingController = new MatchmakingController(listMatchmakingPilotsUseCase);
+
+const sendChallengeUseCase = new SendChallengeUseCase(challengeRepository, userRepository, vehicleRepository, notificationRepository);
+const acceptChallengeUseCase = new AcceptChallengeUseCase(challengeRepository, vehicleRepository, notificationRepository);
+const rejectChallengeUseCase = new RejectChallengeUseCase(challengeRepository, notificationRepository);
+const cancelChallengeUseCase = new CancelChallengeUseCase(challengeRepository);
+const startChallengeUseCase = new StartChallengeUseCase(challengeRepository);
+const reportResultUseCase = new ReportResultUseCase(challengeRepository, profileRepository, notificationRepository);
+const adminResolveUseCase = new AdminResolveUseCase(challengeRepository, profileRepository, notificationRepository);
+const getMyChallengesUseCase = new GetMyChallengesUseCase(challengeRepository);
+
+export const challengeController = new ChallengeController(
+  sendChallengeUseCase,
+  acceptChallengeUseCase,
+  rejectChallengeUseCase,
+  cancelChallengeUseCase,
+  startChallengeUseCase,
+  reportResultUseCase,
+  adminResolveUseCase,
+  getMyChallengesUseCase,
+);

@@ -1,9 +1,13 @@
 import { authPaths } from './paths/auth.paths';
+import { profilePaths } from './paths/profile.paths';
 import { vehiclePaths } from './paths/vehicle.paths';
 import { matchmakingPaths } from './paths/matchmaking.paths';
+import { challengePaths } from './paths/challenge.paths';
 import { authSchemas } from './schemas/auth.schemas';
+import { profileSchemas } from './schemas/profile.schemas';
 import { vehicleSchemas } from './schemas/vehicle.schemas';
 import { matchmakingSchemas } from './schemas/matchmaking.schemas';
+import { challengeSchemas } from './schemas/challenge.schemas';
 import { commonSchemas } from './schemas/common.schemas';
 
 export const openApiDocument = {
@@ -26,9 +30,10 @@ export const openApiDocument = {
   ],
   tags: [
     { name: 'Auth', description: 'Autenticacion y gestion de sesion' },
+    { name: 'Profile', description: 'Perfil del piloto: datos propios y vista publica' },
     { name: 'Vehicles', description: 'Gestion de vehiculos del piloto' },
     { name: 'Matchmaking', description: 'Emparejamiento de pilotos por reglas de negocio' },
-    { name: 'Challenges', description: 'Retos y emparejamiento (proximamente)' },
+    { name: 'Challenges', description: 'Retos entre pilotos: enviar, aceptar, iniciar, reportar resultado y resolucion de disputas' },
     { name: 'Ranking', description: 'Sistema de rangos D-S (proximamente)' },
     { name: 'Notifications', description: 'Eventos y alertas (proximamente)' },
   ],
@@ -38,8 +43,10 @@ export const openApiDocument = {
   },
   paths: {
     ...authPaths,
+    ...profilePaths,
     ...vehiclePaths,
     ...matchmakingPaths,
+    ...challengePaths,
   },
   components: {
     securitySchemes: {
@@ -59,8 +66,10 @@ export const openApiDocument = {
     schemas: {
       ...commonSchemas,
       ...authSchemas,
+      ...profileSchemas,
       ...vehicleSchemas,
       ...matchmakingSchemas,
+      ...challengeSchemas,
     },
   },
 } as const;

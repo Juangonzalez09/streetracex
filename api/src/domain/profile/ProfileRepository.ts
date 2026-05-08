@@ -56,9 +56,15 @@ export interface UpdateProfileInput {
   zonaPais?: string | null;
 }
 
+export interface RankUpdateResult {
+  nuevoRango: string;
+  rangoSubido: boolean;
+}
+
 export interface ProfileRepository {
   findMyProfileById(userId: string): Promise<MyProfile | null>;
   findPublicProfileById(userId: string): Promise<PublicProfile | null>;
   updateMyProfile(userId: string, input: UpdateProfileInput): Promise<MyProfile | null>;
   deactivateProfile(userId: string): Promise<boolean>;
+  updateStatsAfterChallenge(userId: string, won: boolean): Promise<RankUpdateResult>;
 }
