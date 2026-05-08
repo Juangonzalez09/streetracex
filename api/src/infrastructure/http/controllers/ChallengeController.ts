@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { AcceptChallengeUseCase } from '../../../application/challenge/AcceptChallengeUseCase';
 import { AdminResolveUseCase } from '../../../application/challenge/AdminResolveUseCase';
 import { CancelChallengeUseCase } from '../../../application/challenge/CancelChallengeUseCase';
+import { GetChallengeByIdUseCase } from '../../../application/challenge/GetChallengeByIdUseCase';
 import { GetMyChallengesUseCase } from '../../../application/challenge/GetMyChallengesUseCase';
 import { RejectChallengeUseCase } from '../../../application/challenge/RejectChallengeUseCase';
 import { ReportResultUseCase } from '../../../application/challenge/ReportResultUseCase';
@@ -19,6 +20,7 @@ export class ChallengeController {
     private readonly reportResultUseCase: ReportResultUseCase,
     private readonly adminResolveUseCase: AdminResolveUseCase,
     private readonly getMyChallengesUseCase: GetMyChallengesUseCase,
+    private readonly getChallengeByIdUseCase: GetChallengeByIdUseCase,
   ) {}
 
   async send(req: Request, res: Response) {
@@ -55,6 +57,56 @@ export class ChallengeController {
       if (status) return res.status(status).json({ success: false, message: error.message });
 
       return res.status(500).json({ success: false, message: 'Error interno al enviar el reto' });
+    }
+  }
+
+  async getOne(req: Request, res: Response) {
+    const userId = req.auth?.userId;
+    if (!userId) return res.status(401).json({ success: false, message: 'No autenticado' });
+
+    try {
+      const challenge = await this.getChallengeByIdUseCase.execute(req.params.challengeId, userId);
+      return res.status(200).json({ success: true, message: 'Reto obtenido', data: challenge });
+    } catch (error: unknown) {
+      return this.handleChallengeError(error, res, 'obtener');
+    }
+  }
+
+  async updateStatus(req: Request, res: Response) {
+    const userId = req.auth?.userId;
+    if (!userId) return res.status(401).json({ success: false, message: 'No autenticado' });
+
+    const { challengeId } = req.params;
+    const { estado } = req.body;
+
+    try {
+      let challenge;
+      let message;
+
+      switch (estado) {
+        case 'ACEPTADO':
+          challenge = await this.acceptChallengeUseCase.execute(challengeId, userId);
+          message = 'Reto aceptado';
+          break;
+        case 'RECHAZADO':
+          challenge = await this.rejectChallengeUseCase.execute(challengeId, userId);
+          message = 'Reto rechazado';
+          break;
+        case 'CANCELADO':
+          challenge = await this.cancelChallengeUseCase.execute(challengeId, userId);
+          message = 'Reto cancelado';
+          break;
+        case 'EN_CURSO':
+          challenge = await this.startChallengeUseCase.execute(challengeId, userId);
+          message = 'Reto iniciado';
+          break;
+        default:
+          return res.status(422).json({ success: false, message: 'Estado no válido' });
+      }
+
+      return res.status(200).json({ success: true, message, data: challenge });
+    } catch (error: unknown) {
+      return this.handleChallengeError(error, res, 'actualizar estado');
     }
   }
 

@@ -1,5 +1,5 @@
 export const profilePaths = {
-  '/api/profile/me': {
+  '/api/v1/profile/me': {
     get: {
       tags: ['Profile'],
       summary: 'Obtiene el perfil del piloto autenticado',
@@ -225,7 +225,10 @@ export const profilePaths = {
         },
       },
     },
-    delete: {
+  },
+
+  '/api/v1/profile/me/deactivate': {
+    patch: {
       tags: ['Profile'],
       summary: 'Desactiva la cuenta del piloto autenticado',
       description: 'Marca la cuenta como INACTIVA y revoca todos los refresh tokens activos. La cuenta no se elimina de la base de datos.',
@@ -280,7 +283,7 @@ export const profilePaths = {
     },
   },
 
-  '/api/profile/{userId}': {
+  '/api/v1/profile/{userId}': {
     get: {
       tags: ['Profile'],
       summary: 'Obtiene el perfil público de un piloto',
