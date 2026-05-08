@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { challengeController, trackController } from '../../dependencies';
-import { validateBody, validateParams } from '../middlewares/validateBody';
+import { validateBody, validateParams, validateQuery } from '../middlewares/validateBody';
+import { adminListChallengesQuerySchema } from '../schemas/challenge/adminListChallengesQuerySchema';
 import { adminResolveBodySchema } from '../schemas/challenge/adminResolveBodySchema';
 import { challengeIdParamSchema } from '../schemas/challenge/challengeIdParamSchema';
 import { trackIdParamSchema } from '../schemas/common/trackIdParamSchema';
@@ -9,7 +10,10 @@ import { updateTrackBodySchema } from '../schemas/track/updateTrackBodySchema';
 
 const router = Router();
 
-// Challenges — resolución de disputas
+// Challenges — listado y resolución de disputas
+router.get('/challenges', validateQuery(adminListChallengesQuerySchema), (req, res) =>
+  challengeController.adminListChallenges(req, res),
+);
 router.patch('/challenges/:challengeId/resolve', validateParams(challengeIdParamSchema), validateBody(adminResolveBodySchema), (req, res) =>
   challengeController.adminResolve(req, res),
 );

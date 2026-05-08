@@ -1,4 +1,35 @@
 export const adminPaths = {
+  '/api/v1/admin/challenges': {
+    get: {
+      tags: ['Admin'],
+      summary: 'Listar retos (Admin)',
+      description: 'Retorna todos los retos del sistema. Usar `soloDisputas=true` para ver únicamente los retos EN_CURSO con reportes contradictorios que requieren resolución del administrador.',
+      operationId: 'adminListChallenges',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          name: 'estado',
+          in: 'query',
+          required: false,
+          schema: { type: 'string', enum: ['PENDIENTE', 'ACEPTADO', 'RECHAZADO', 'EN_CURSO', 'COMPLETADO', 'CANCELADO'] },
+          description: 'Filtrar por estado',
+        },
+        {
+          name: 'soloDisputas',
+          in: 'query',
+          required: false,
+          schema: { type: 'string', enum: ['true', 'false'] },
+          description: 'Si `true`, retorna solo retos EN_CURSO con reportes contradictorios pendientes de resolución',
+        },
+      ],
+      responses: {
+        200: { description: 'Lista de retos', content: { 'application/json': { schema: { $ref: '#/components/schemas/ChallengeListResponse' } } } },
+        401: { description: 'No autenticado', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
+        403: { description: 'Acceso denegado', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
+      },
+    },
+  },
+
   '/api/v1/admin/challenges/{challengeId}/resolve': {
     patch: {
       tags: ['Admin'],

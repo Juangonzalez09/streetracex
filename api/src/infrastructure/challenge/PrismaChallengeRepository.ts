@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import {
+  AdminChallengeFilters,
   ChallengeFilters,
   ChallengeItem,
   ChallengeRepository,
@@ -139,6 +140,37 @@ export class PrismaChallengeRepository implements ChallengeRepository {
       include: challengeInclude,
     });
     return this.toItem(row);
+  }
+
+  async findAllChallenges(filters: AdminChallengeFilters): Promise<ChallengeItem[]> {
+    const where: Record<string, unknown> = {};
+
+    if (filters.soloDisputas) {
+      where.estado = 'EN_CURSO';
+      where.reporte_retador_id = { not: null };
+      where.reporte_retado_id = { not: null };
+    } else if (filters.estado) {
+      where.estado = filters.estado;
+    }
+
+    const rows = await this.prisma.challenge.findMany({
+      where,
+      include: challengeInclude,
+      orderBy: { updated_at: 'desc' },
+    });
+
+    let items = (rows as ChallengeRow[]).map((row) => this.toItem(row));
+
+    if (filters.soloDisputas) {
+      items = items.filter(
+        (item) =>
+          item.reporteRetadorId !== null &&
+          item.reporteRetadoId !== null &&
+          item.reporteRetadorId !== item.reporteRetadoId,
+      );
+    }
+
+    return items;
   }
 
   private toItem(row: ChallengeRow): ChallengeItem {

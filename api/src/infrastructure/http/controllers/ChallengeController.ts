@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { AcceptChallengeUseCase } from '../../../application/challenge/AcceptChallengeUseCase';
+import { AdminListChallengesUseCase } from '../../../application/challenge/AdminListChallengesUseCase';
 import { AdminResolveUseCase } from '../../../application/challenge/AdminResolveUseCase';
 import { CancelChallengeUseCase } from '../../../application/challenge/CancelChallengeUseCase';
 import { GetChallengeByIdUseCase } from '../../../application/challenge/GetChallengeByIdUseCase';
@@ -21,6 +22,7 @@ export class ChallengeController {
     private readonly adminResolveUseCase: AdminResolveUseCase,
     private readonly getMyChallengesUseCase: GetMyChallengesUseCase,
     private readonly getChallengeByIdUseCase: GetChallengeByIdUseCase,
+    private readonly adminListChallengesUseCase: AdminListChallengesUseCase,
   ) {}
 
   async send(req: Request, res: Response) {
@@ -186,11 +188,24 @@ export class ChallengeController {
         ? result.rangoSubidoGanador
           ? 'Resultado confirmado. ¡El ganador subió de rango!'
           : 'Resultado confirmado'
-        : 'Resultado reportado. Esperando confirmación del otro piloto';
+        : result.disputa
+          ? 'Los reportes no coinciden. Un administrador debe resolver la disputa'
+          : 'Resultado reportado. Esperando confirmación del otro piloto';
 
       return res.status(200).json({ success: true, message, data: result.challenge });
     } catch (error: unknown) {
       return this.handleChallengeError(error, res, 'reportar resultado');
+    }
+  }
+
+  async adminListChallenges(req: Request, res: Response) {
+    try {
+      const { estado, soloDisputas } = req.query as { estado?: string; soloDisputas?: boolean };
+      const challenges = await this.adminListChallengesUseCase.execute({ estado, soloDisputas });
+      const message = soloDisputas ? 'Disputas pendientes obtenidas' : 'Retos obtenidos';
+      return res.status(200).json({ success: true, message, data: challenges });
+    } catch (error: unknown) {
+      return this.handleChallengeError(error, res, 'listar retos');
     }
   }
 
